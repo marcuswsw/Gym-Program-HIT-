@@ -377,7 +377,7 @@ nav::-webkit-scrollbar{display:none;}
 <div class="mob-target">Anterior pelvic tilt · Thoracic stiffness</div><div class="ex-tip">Lie on back, knees at 90° on a chair. In through nose 4 sec expanding ribcage 360°. Exhale fully 6 sec. Restores diaphragm function, reduces anterior pelvic tilt, opens the thorax. Do this last — natural wind-down.</div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'wknd')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 </div>
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxBMn6Kya-35E6OfYG-rryG76dRvZFKsxHPbjBpMpcmWB9cAMS2mC4v83geTfeW_BhF/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwWQPx3_ITeMh5N2n0qhSEnRG5D-nPYnI_f-m_wS-rUXm61plc0TC_mUpsuKYTt6b_0/exec";
 const REP_RANGES={pullover:[10,12],yatesrow:[6,8],cablerow:[8,10],pullups:[6,8],backext:[10,12],dbpress:[8,10],lateralraise:[10,12],reardelt:[12,15],pushdown:[10,12],ohext:[10,12],legext:[10,12],legpress:[8,10],hacksquat:[10,12],legcurl:[10,12],sldl:[8,10],calfraise:[12,15],inclinepress:[8,10],machinepress:[8,10],crossover:[10,12],barcurl:[8,10],inclinecurl:[10,12]};
 const EX_NAMES={pullover:'Machine/cable pullover',yatesrow:'Yates Row',cablerow:'Seated cable row',pullups:'Weighted pullups',backext:'Loaded back extension',dbpress:'Seated DB/Smith press',lateralraise:'Seated lateral raise',reardelt:'Rear delt raise/face pull',pushdown:'Cable pushdown',ohext:'Overhead extension',legext:'Leg extension',legpress:'Leg press',hacksquat:'Hack squat',legcurl:'Lying leg curl',sldl:'Stiff-leg deadlift',calfraise:'Standing calf raise',inclinepress:'Incline barbell press',machinepress:'Machine incline/flat DB press',crossover:'Cable crossover/pec deck',barcurl:'Barbell/EZ bar curl',inclinecurl:'Incline DB/hammer curl'};
 const LOGGERS=Object.keys(REP_RANGES);
@@ -400,11 +400,28 @@ async function syncToSheets(entry, exId) {
         exercise: EX_NAMES[exId] || exId,
         weight: entry.weight,
         reps: entry.reps,
-        overloaded: entry.overloaded
+        overloaded: entry.overloaded,
+        note: ''
       })
     });
   } catch(e) {
     console.warn('Sheets sync failed:', e);
+  }
+}
+
+async function syncNoteToSheets(id, note) {
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        exercise: EX_NAMES[id] || id,
+        note: note
+      })
+    });
+  } catch(e) {
+    console.warn('Note sync failed:', e);
   }
 }
 
@@ -514,14 +531,14 @@ function buildNotes(id) {
   </div>`;
 }
 
+const _noteTimers = {};
 function saveNote(id) {
   const val = document.getElementById('noteinput-' + id).value;
   save('notes_' + id, val);
   const status = document.getElementById('notestatus-' + id);
-  if (status) {
-    status.textContent = 'Saved';
-    setTimeout(() => { status.textContent = ''; }, 1500);
-  }
+  if (status) { status.textContent = 'Saved'; setTimeout(() => { status.textContent = ''; }, 1500); }
+  clearTimeout(_noteTimers[id]);
+  _noteTimers[id] = setTimeout(() => syncNoteToSheets(id, val), 2000);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
