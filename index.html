@@ -109,16 +109,19 @@ nav::-webkit-scrollbar{display:none;}
 .notes-input:focus { border-color: var(--teal-tx); }
 .notes-input::placeholder { color: var(--faint); }
 .notes-saved { font-size: 11px; color: var(--teal-tx); margin-top: 4px; height: 14px; transition: opacity .3s; }
-.rest-timer{margin-top:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;}
-.rest-timer-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.rest-timer-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
-.rest-timer-count{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);letter-spacing:-.01em;line-height:1;}
-.rest-timer-close{background:transparent;border:none;color:var(--faint);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;}
-.rest-timer-bar-bg{height:3px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:2px;}
-.rest-timer-bar-fill{height:100%;background:var(--teal-tx);border-radius:99px;transition:width 1s linear;}
-.rest-timer-done{font-size:12px;font-weight:700;color:#4ade80;margin-top:8px;text-align:center;}
-.rest-timer.complete{border-color:#1d9e75;animation:rest-pulse .5s ease 3;}
-@keyframes rest-pulse{0%,100%{background:var(--surface2);}50%{background:#0a2018;}}
+#rest-banner{position:fixed;bottom:0;left:0;right:0;z-index:200;transform:translateY(110%);transition:transform .32s cubic-bezier(.16,1,.3,1);background:var(--surface);border-top:1px solid var(--border2);padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -6px 28px rgba(0,0,0,.5);}
+#rest-banner.visible{transform:translateY(0);}
+#rest-banner.complete{animation:rest-pulse .5s ease 3;}
+.rb-top{display:flex;align-items:center;gap:12px;}
+.rb-left{flex:1;min-width:0;}
+.rb-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.rb-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rb-count{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);letter-spacing:-.02em;line-height:1;flex-shrink:0;}
+.rb-close{background:transparent;border:none;color:var(--faint);font-size:18px;cursor:pointer;padding:4px 4px 4px 8px;line-height:1;flex-shrink:0;}
+.rb-bar-bg{height:3px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:12px;}
+.rb-bar-fill{height:100%;background:var(--teal-tx);border-radius:99px;transition:width 1s linear;}
+.rb-done{font-size:12px;font-weight:700;color:#4ade80;margin-top:8px;text-align:center;}
+@keyframes rest-pulse{0%,100%{background:var(--surface);}50%{background:#0a2018;}}
 </style>
 </head>
 <body>
@@ -420,7 +423,7 @@ async function syncToSheets(entry, exId, note) {
 }
 
 const REST_TIMES={yatesrow:180,pullups:180,legpress:180,hacksquat:180,inclinepress:180,machinepress:180,sldl:180,pullover:90,cablerow:90,backext:90,dbpress:90,lateralraise:90,reardelt:90,pushdown:90,ohext:90,legext:90,legcurl:90,calfraise:90,crossover:90,barcurl:90,inclinecurl:90};
-let _restTimer={interval:null,el:null,id:null};
+let _restTimer={interval:null,id:null};
 let _audioCtx=null;
 
 function unlockAudio(){
@@ -438,27 +441,36 @@ function playBeep(){
 
 function stopRestTimer(){
   if(_restTimer.interval){clearInterval(_restTimer.interval);_restTimer.interval=null;}
-  if(_restTimer.el){_restTimer.el.innerHTML='';_restTimer.el=null;}
   _restTimer.id=null;
+  const banner=document.getElementById('rest-banner');
+  if(banner)banner.classList.remove('visible','complete');
 }
 
 function startRestTimer(id){
-  stopRestTimer();
+  if(_restTimer.interval){clearInterval(_restTimer.interval);_restTimer.interval=null;}
+  _restTimer.id=id;
   const total=REST_TIMES[id]||90;
   let remaining=total;
-  const container=document.getElementById('rest-'+id);
-  if(!container)return;
-  _restTimer.el=container;_restTimer.id=id;
+  const banner=document.getElementById('rest-banner');
+  if(!banner)return;
+  const name=EX_NAMES[id]||id;
   function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-  container.innerHTML=`<div class="rest-timer"><div class="rest-timer-top"><div><div class="rest-timer-label">Rest</div><div class="rest-timer-count" id="rtcount-${id}">${fmt(remaining)}</div></div><button class="rest-timer-close" onclick="stopRestTimer()">✕</button></div><div class="rest-timer-bar-bg"><div class="rest-timer-bar-fill" id="rtbar-${id}" style="width:100%"></div></div></div>`;
+  banner.className='';
+  banner.innerHTML=`<div class="rb-top"><div class="rb-left"><div class="rb-label">Rest</div><div class="rb-name">${name}</div></div><div class="rb-count" id="rb-count">${fmt(remaining)}</div><button class="rb-close" onclick="stopRestTimer()">✕</button></div><div class="rb-bar-bg"><div class="rb-bar-fill" id="rb-bar" style="width:100%"></div></div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>banner.classList.add('visible')));
   _restTimer.interval=setInterval(()=>{
     remaining--;
     if(remaining<=0){
       clearInterval(_restTimer.interval);_restTimer.interval=null;
-      container.innerHTML=`<div class="rest-timer complete"><div class="rest-timer-top"><div><div class="rest-timer-label">Rest</div><div class="rest-timer-count" style="color:#4ade80">00:00</div></div><button class="rest-timer-close" onclick="stopRestTimer()">✕</button></div><div class="rest-timer-bar-bg"><div class="rest-timer-bar-fill" style="width:0%"></div></div><div class="rest-timer-done">Rest complete — go!</div></div>`;
+      const c=document.getElementById('rb-count');const b=document.getElementById('rb-bar');
+      if(c){c.textContent='00:00';c.style.color='#4ade80';}
+      if(b)b.style.width='0%';
+      const barBg=banner.querySelector('.rb-bar-bg');
+      if(barBg){const d=document.createElement('div');d.className='rb-done';d.textContent='Rest complete — go!';barBg.after(d);}
+      banner.classList.add('complete');
       playBeep();
     } else {
-      const c=document.getElementById('rtcount-'+id);const b=document.getElementById('rtbar-'+id);
+      const c=document.getElementById('rb-count');const b=document.getElementById('rb-bar');
       if(!c){clearInterval(_restTimer.interval);_restTimer.interval=null;return;}
       c.textContent=fmt(remaining);if(b)b.style.width=((remaining/total)*100)+'%';
     }
@@ -486,7 +498,7 @@ function buildLogger(id){
     histHTML+='</div>';
   }
 
-  el.innerHTML=`<div class="logger-row"><span class="logger-label">Weight</span><input class="log-input" type="number" id="w-${id}" value="${sugW||''}" placeholder="kg" step="0.5" min="0"><span class="unit-label">kg</span></div><div class="logger-row"><span class="logger-label">Reps</span><div class="rep-btns" id="reps-${id}">${repBtns}</div></div><div class="logger-actions"><button class="log-btn btn-save" onclick="logSet('${id}',${rMin},${rMax})">Save set</button><button class="log-btn btn-clear" onclick="clearHist('${id}')">Clear history</button></div><div id="banner-${id}"></div><div id="rest-${id}"></div>${histHTML}`;
+  el.innerHTML=`<div class="logger-row"><span class="logger-label">Weight</span><input class="log-input" type="number" id="w-${id}" value="${sugW||''}" placeholder="kg" step="0.5" min="0"><span class="unit-label">kg</span></div><div class="logger-row"><span class="logger-label">Reps</span><div class="rep-btns" id="reps-${id}">${repBtns}</div></div><div class="logger-actions"><button class="log-btn btn-save" onclick="logSet('${id}',${rMin},${rMax})">Save set</button><button class="log-btn btn-clear" onclick="clearHist('${id}')">Clear history</button></div><div id="banner-${id}"></div>${histHTML}`;
 
   if(last&&last.overloaded&&sugW)showBanner(id,`Add weight next session &#8594; target <strong>${sugW}kg</strong>`,true);
 }
@@ -585,5 +597,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   LOGGERS.forEach(id=>{ buildLogger(id); buildNotes(id); });
 });
 </script>
+<div id="rest-banner"></div>
 </body>
 </html>
