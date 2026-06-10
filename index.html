@@ -102,6 +102,13 @@ nav::-webkit-scrollbar{display:none;}
 .inc-input::-webkit-outer-spin-button,.inc-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .inc-input:focus{border-color:var(--teal-tx);}
 @media(max-width:480px){.split-grid{grid-template-columns:1fr;}.principles-grid{grid-template-columns:1fr;}}
+
+.notes-wrap { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.notes-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
+.notes-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; line-height: 1.5; padding: 9px 12px; resize: none; outline: none; min-height: 70px; }
+.notes-input:focus { border-color: var(--teal-tx); }
+.notes-input::placeholder { color: var(--faint); }
+.notes-saved { font-size: 11px; color: var(--teal-tx); margin-top: 4px; height: 14px; transition: opacity .3s; }
 </style>
 </head>
 <body>
@@ -154,22 +161,27 @@ nav::-webkit-scrollbar{display:none;}
 <div class="slabel">Lats — pre-exhaust</div>
 <div class="ex-card " id="card-pullover">
 <div class="ex-header"><div class="ex-name">Machine or cable pullover</div><div class="doses"><div class="dpill dw">1 × 12 warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-iso">Pre-exhaust</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Initiate with the lats, not the arms. Full stretch overhead, hard squeeze at the bottom. Establishes the mind-muscle connection before any rowing.</div><div class="logger" id="logger-pullover"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-iso">Pre-exhaust</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Initiate with the lats, not the arms. Full stretch overhead, hard squeeze at the bottom. Establishes the mind-muscle connection before any rowing.</div><div class="logger" id="logger-pullover"></div>
+<div id="notes-pullover"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Lats — compound rowing</div>
 <div class="ex-card " id="card-yatesrow">
 <div class="ex-header"><div class="ex-name">Yates Row <span style="color:var(--muted);font-weight:400;font-size:12px">(underhand barbell row)</span></div><div class="doses"><div class="dpill dw">1 × 10 warm-up</div><div class="dpill dwk">1 × 6–8 working</div></div></div>
-<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Slight forward lean (~30°), underhand grip, drive elbows back past the torso. Explosive pull, 3-sec lower. Rest-pause: re-grip, breathe 10–12 sec, squeeze out 2–3 more. The primary mass builder.</div><div class="logger" id="logger-yatesrow"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Slight forward lean (~30°), underhand grip, drive elbows back past the torso. Explosive pull, 3-sec lower. Rest-pause: re-grip, breathe 10–12 sec, squeeze out 2–3 more. The primary mass builder.</div><div class="logger" id="logger-yatesrow"></div>
+<div id="notes-yatesrow"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-cablerow">
 <div class="ex-header"><div class="ex-name">Seated cable row or Hammer Strength row</div><div class="doses"><div class="dpill dwk">1 × 8–10 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Second rowing movement to fully inroad the mid-back and lats. Chest tall, drive elbows past the body, pause contracted.</div><div class="logger" id="logger-cablerow"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Second rowing movement to fully inroad the mid-back and lats. Chest tall, drive elbows past the body, pause contracted.</div><div class="logger" id="logger-cablerow"></div>
+<div id="notes-cablerow"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Lats — vertical pull</div>
 <div class="ex-card " id="card-pullups">
 <div class="ex-header"><div class="ex-name">Weighted pullups<span class="must-badge">must</span></div><div class="doses"><div class="dpill dw">1 × BW × 5 warm-up</div><div class="dpill dwk">1 × 6–8 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Add a plate or dipping belt. Full hang at the bottom. Pull chest toward the bar, 3-sec lowering. Use a pulldown as working set if bodyweight reps are below 6 clean.</div><div class="logger" id="logger-pullups"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Add a plate or dipping belt. Full hang at the bottom. Pull chest toward the bar, 3-sec lowering. Use a pulldown as working set if bodyweight reps are below 6 clean.</div><div class="logger" id="logger-pullups"></div>
+<div id="notes-pullups"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Erectors + glute-ham tie-in</div>
 <div class="ex-card " id="card-backext">
 <div class="ex-header"><div class="ex-name">Loaded back extension</div><div class="doses"><div class="dpill dw">1 × 12 BW warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Hold a plate to your chest. Lower 3–4 sec, drive to just past parallel — not hyperextended. Squeeze glutes hard at the top. Add weight to the plate over time.</div><div class="logger" id="logger-backext"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Hold a plate to your chest. Lower 3–4 sec, drive to just past parallel — not hyperextended. Squeeze glutes hard at the top. Add weight to the plate over time.</div><div class="logger" id="logger-backext"></div>
+<div id="notes-backext"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 </div>
 <div id="page-tue" class="page">
 <div class="day-ey">Tuesday</div><div class="day-title">Deltoids + Triceps</div>
@@ -178,21 +190,26 @@ nav::-webkit-scrollbar{display:none;}
 <div class="slabel">Deltoids — pressing</div>
 <div class="ex-card " id="card-dbpress">
 <div class="ex-header"><div class="ex-name">Seated dumbbell press or Smith machine press</div><div class="doses"><div class="dpill dw">1–2 × 10 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
-<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Seated DB gives more ROM. Smith is safer at true failure solo. Controlled descent, drive through full range, rest-pause past failure.</div><div class="logger" id="logger-dbpress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Seated DB gives more ROM. Smith is safer at true failure solo. Controlled descent, drive through full range, rest-pause past failure.</div><div class="logger" id="logger-dbpress"></div>
+<div id="notes-dbpress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Deltoids — lateral + rear</div>
 <div class="ex-card " id="card-lateralraise">
 <div class="ex-header"><div class="ex-name">Seated dumbbell lateral raise</div><div class="doses"><div class="dpill dw">1 × 12 warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-fx">Forced reps</span></div><div class="ex-tip">Seated removes momentum — every rep is honest. Lead with the elbows, slight forward lean, slow 3-sec lowering. Forced reps extend past failure.</div><div class="logger" id="logger-lateralraise"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-fx">Forced reps</span></div><div class="ex-tip">Seated removes momentum — every rep is honest. Lead with the elbows, slight forward lean, slow 3-sec lowering. Forced reps extend past failure.</div><div class="logger" id="logger-lateralraise"></div>
+<div id="notes-lateralraise"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-reardelt">
 <div class="ex-header"><div class="ex-name">Rear deltoid raise or cable face pull</div><div class="doses"><div class="dpill dwk">1 × 12–15 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Full range, avoid traps taking over. Rear delts protect the rotator cuff under heavy pressing load and tie the shoulder to the back visually.</div><div class="logger" id="logger-reardelt"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Full range, avoid traps taking over. Rear delts protect the rotator cuff under heavy pressing load and tie the shoulder to the back visually.</div><div class="logger" id="logger-reardelt"></div>
+<div id="notes-reardelt"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Triceps</div>
 <div class="ex-card " id="card-pushdown">
 <div class="ex-header"><div class="ex-name">Cable pushdown</div><div class="doses"><div class="dpill dw">1 × 12 warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Lock the elbows in place — forearm only. Full extension at the bottom, squeeze hard. Rest-pause to extend past failure.</div><div class="logger" id="logger-pushdown"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Lock the elbows in place — forearm only. Full extension at the bottom, squeeze hard. Rest-pause to extend past failure.</div><div class="logger" id="logger-pushdown"></div>
+<div id="notes-pushdown"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-ohext">
 <div class="ex-header"><div class="ex-name">Overhead barbell or dumbbell extension</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">The long head only reaches full stretch overhead — largest of the three heads. Control the negative carefully to protect the elbow joint.</div><div class="logger" id="logger-ohext"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">The long head only reaches full stretch overhead — largest of the three heads. Control the negative carefully to protect the elbow joint.</div><div class="logger" id="logger-ohext"></div>
+<div id="notes-ohext"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 </div>
 <div id="page-thu" class="page">
 <div class="day-ey">Thursday</div><div class="day-title">Legs + Calves</div>
@@ -201,25 +218,31 @@ nav::-webkit-scrollbar{display:none;}
 <div class="slabel">Quadriceps — pre-exhaust</div>
 <div class="ex-card " id="card-legext">
 <div class="ex-header"><div class="ex-name">Leg extension</div><div class="doses"><div class="dpill dw">1 × 15 warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-iso">Pre-exhaust</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Plantarflex at the top (toes pulled up) for a harder quad contraction. 3-sec lowering. Do not skip this — it determines whether your quads or lower back fail first on the press.</div><div class="logger" id="logger-legext"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-iso">Pre-exhaust</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Plantarflex at the top (toes pulled up) for a harder quad contraction. 3-sec lowering. Do not skip this — it determines whether your quads or lower back fail first on the press.</div><div class="logger" id="logger-legext"></div>
+<div id="notes-legext"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Quadriceps — compound</div>
 <div class="ex-card " id="card-legpress">
 <div class="ex-header"><div class="ex-name">Leg press</div><div class="doses"><div class="dpill dw">2–3 escalating warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
-<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Feet shoulder-width, full depth. Don't lock out at the top. Rest-pause: unload, breathe 10 sec, grind out 2–3 more.</div><div class="logger" id="logger-legpress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Feet shoulder-width, full depth. Don't lock out at the top. Rest-pause: unload, breathe 10 sec, grind out 2–3 more.</div><div class="logger" id="logger-legpress"></div>
+<div id="notes-legpress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-hacksquat">
 <div class="ex-header"><div class="ex-name">Hack squat</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Higher foot placement emphasises VMO and quad sweep. Slow eccentric. Finishes the quads after the leg press has done significant damage.</div><div class="logger" id="logger-hacksquat"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Higher foot placement emphasises VMO and quad sweep. Slow eccentric. Finishes the quads after the leg press has done significant damage.</div><div class="logger" id="logger-hacksquat"></div>
+<div id="notes-hacksquat"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Hamstrings</div>
 <div class="ex-card " id="card-legcurl">
 <div class="ex-header"><div class="ex-name">Lying leg curl</div><div class="doses"><div class="dpill dw">1 × 12 warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Plantarflex (toes away) at the top for a fuller contraction. 3-sec lowering phase. Rest-pause to extend the set.</div><div class="logger" id="logger-legcurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Plantarflex (toes away) at the top for a fuller contraction. 3-sec lowering phase. Rest-pause to extend the set.</div><div class="logger" id="logger-legcurl"></div>
+<div id="notes-legcurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-sldl">
 <div class="ex-header"><div class="ex-name">Stiff-leg deadlift</div><div class="doses"><div class="dpill dwk">1 × 8–10 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Feel the hamstring stretch — not the lower back. Soft knee throughout. This is a stretch-and-contract movement, not a strength lift. Go lighter than you think.</div><div class="logger" id="logger-sldl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Feel the hamstring stretch — not the lower back. Soft knee throughout. This is a stretch-and-contract movement, not a strength lift. Go lighter than you think.</div><div class="logger" id="logger-sldl"></div>
+<div id="notes-sldl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Calves</div>
 <div class="ex-card " id="card-calfraise">
 <div class="ex-header"><div class="ex-name">Standing calf raise</div><div class="doses"><div class="dpill dw">1 × 15 warm-up</div><div class="dpill dwk">1 × 12–15 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Full stretch at the bottom, 1-sec pause. Don't bounce — it bypasses the muscle. Train calves with the same intensity as every other bodypart.</div><div class="logger" id="logger-calfraise"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Full stretch at the bottom, 1-sec pause. Don't bounce — it bypasses the muscle. Train calves with the same intensity as every other bodypart.</div><div class="logger" id="logger-calfraise"></div>
+<div id="notes-calfraise"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'thu')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 </div>
 <div id="page-fri" class="page">
 <div class="day-ey">Friday</div><div class="day-title">Pectorals + Biceps</div>
@@ -228,21 +251,26 @@ nav::-webkit-scrollbar{display:none;}
 <div class="slabel">Pectorals — upper</div>
 <div class="ex-card " id="card-inclinepress">
 <div class="ex-header"><div class="ex-name">Incline barbell press<span class="must-badge">must</span></div><div class="doses"><div class="dpill dw">2 × escalating warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
-<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">30–45° incline. Full stretch at the bottom, explosive drive, 3-sec lowering. Rest-pause: re-rack, breathe, push past failure. The primary strength movement of the session.</div><div class="logger" id="logger-inclinepress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">30–45° incline. Full stretch at the bottom, explosive drive, 3-sec lowering. Rest-pause: re-rack, breathe, push past failure. The primary strength movement of the session.</div><div class="logger" id="logger-inclinepress"></div>
+<div id="notes-inclinepress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Pectorals — mid + full</div>
 <div class="ex-card " id="card-machinepress">
 <div class="ex-header"><div class="ex-name">Machine incline press or flat dumbbell press</div><div class="doses"><div class="dpill dw">1 × 8 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
-<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Machine is safer at true failure without a spotter. Flat DB gives more stretch. Goal is maximum inroad after the incline barbell has taxed the upper chest.</div><div class="logger" id="logger-machinepress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Machine is safer at true failure without a spotter. Flat DB gives more stretch. Goal is maximum inroad after the incline barbell has taxed the upper chest.</div><div class="logger" id="logger-machinepress"></div>
+<div id="notes-machinepress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-crossover">
 <div class="ex-header"><div class="ex-name">Cable crossover flyes or pec deck</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-fx">Forced reps</span></div><div class="ex-tip">Hold the peak contraction 1–2 sec. The pec is already exhausted — you won't need much weight. Forced reps work well here.</div><div class="logger" id="logger-crossover"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-fx">Forced reps</span></div><div class="ex-tip">Hold the peak contraction 1–2 sec. The pec is already exhausted — you won't need much weight. Forced reps work well here.</div><div class="logger" id="logger-crossover"></div>
+<div id="notes-crossover"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Biceps</div>
 <div class="ex-card " id="card-barcurl">
 <div class="ex-header"><div class="ex-name">Barbell or EZ bar curl</div><div class="doses"><div class="dpill dw">1 × 10 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Strict form — no body English. Biceps are pre-fatigued from Monday rows and pullups. Control the negative on every rep.</div><div class="logger" id="logger-barcurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Strict form — no body English. Biceps are pre-fatigued from Monday rows and pullups. Control the negative on every rep.</div><div class="logger" id="logger-barcurl"></div>
+<div id="notes-barcurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-inclinecurl">
 <div class="ex-header"><div class="ex-name">Incline dumbbell curl or hammer curl</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
-<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Incline position puts the long head under maximum stretch. Full hang at the bottom, slow lowering. Rest-pause to extend past failure.</div><div class="logger" id="logger-inclinecurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
+<div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Incline position puts the long head under maximum stretch. Full hang at the bottom, slow lowering. Rest-pause to extend past failure.</div><div class="logger" id="logger-inclinecurl"></div>
+<div id="notes-inclinecurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 </div>
 <div id="page-wed" class="page">
 <div class="day-ey">Wednesday</div><div class="day-title">Posture, Mobility + Abs</div>
@@ -474,9 +502,31 @@ function toggleCheck(btn,day){
   if(bar)bar.style.width=pct+'%';
 }
 
+
+function buildNotes(id) {
+  const el = document.getElementById('notes-' + id);
+  if (!el) return;
+  const saved = load('notes_' + id, '');
+  el.innerHTML = `<div class="notes-wrap">
+    <div class="notes-label">Session notes</div>
+    <textarea class="notes-input" id="noteinput-${id}" placeholder="Form cues, feel, things to fix next session..." oninput="saveNote('${id}')">${saved}</textarea>
+    <div class="notes-saved" id="notestatus-${id}"></div>
+  </div>`;
+}
+
+function saveNote(id) {
+  const val = document.getElementById('noteinput-' + id).value;
+  save('notes_' + id, val);
+  const status = document.getElementById('notestatus-' + id);
+  if (status) {
+    status.textContent = 'Saved';
+    setTimeout(() => { status.textContent = ''; }, 1500);
+  }
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('global-increment').value=load('increment',2.5);
-  LOGGERS.forEach(id=>buildLogger(id));
+  LOGGERS.forEach(id=>{ buildLogger(id); buildNotes(id); });
 });
 </script>
 </body>
