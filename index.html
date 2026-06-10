@@ -389,7 +389,7 @@ function load(k,d){try{const v=localStorage.getItem('hit_'+k);return v!==null?JS
 function saveIncrement(){const v=parseFloat(document.getElementById('global-increment').value)||2.5;save('increment',v);}
 function getIncrement(){return load('increment',2.5);}
 
-async function syncToSheets(entry, exId) {
+async function syncToSheets(entry, exId, note) {
   try {
     await fetch(GAS_URL, {
       method: 'POST',
@@ -401,27 +401,11 @@ async function syncToSheets(entry, exId) {
         weight: entry.weight,
         reps: entry.reps,
         overloaded: entry.overloaded,
-        note: ''
+        note: note || ''
       })
     });
   } catch(e) {
     console.warn('Sheets sync failed:', e);
-  }
-}
-
-async function syncNoteToSheets(id, note) {
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        exercise: EX_NAMES[id] || id,
-        note: note
-      })
-    });
-  } catch(e) {
-    console.warn('Note sync failed:', e);
   }
 }
 
@@ -473,8 +457,8 @@ async function logSet(id,rMin,rMax){
   hist.push(entry);
   save('hist_'+id,hist);
   
-  // Sync to Google Sheets
-  syncToSheets(entry, id);
+  const noteEl = document.getElementById('noteinput-' + id);
+  syncToSheets(entry, id, noteEl ? noteEl.value : '');
   
   const card=document.getElementById('card-'+id);
   if(card)card.classList.toggle('overload-ready',overloaded);
@@ -531,14 +515,11 @@ function buildNotes(id) {
   </div>`;
 }
 
-const _noteTimers = {};
 function saveNote(id) {
   const val = document.getElementById('noteinput-' + id).value;
   save('notes_' + id, val);
   const status = document.getElementById('notestatus-' + id);
   if (status) { status.textContent = 'Saved'; setTimeout(() => { status.textContent = ''; }, 1500); }
-  clearTimeout(_noteTimers[id]);
-  _noteTimers[id] = setTimeout(() => syncNoteToSheets(id, val), 2000);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
