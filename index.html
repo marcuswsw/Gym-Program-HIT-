@@ -422,7 +422,8 @@ function getExName(id){return _swappedNames[id]||EX_NAMES[id]||id;}
 function openSwap(id){
   _swapTargetId=id;
   const alts=SWAP_ALTS[id]||[];
-  document.getElementById('swap-list').innerHTML=alts.map(n=>`<button class="swap-item" onclick="doSwap('${id}',${JSON.stringify(n)})">${n}</button>`).join('');
+  const list=document.getElementById('swap-list');
+  list.innerHTML=alts.map((n,i)=>`<button class="swap-item" onclick="doSwap('${id}',SWAP_ALTS['${id}'][${i}])">${n}</button>`).join('');
   document.getElementById('swap-custom-input').value='';
   document.getElementById('swap-overlay').classList.add('open');
 }
