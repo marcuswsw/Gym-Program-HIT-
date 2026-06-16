@@ -191,6 +191,13 @@ nav::-webkit-scrollbar{display:none;}
 .rv-week-row:last-child{border-bottom:none;}
 .rv-week-name{color:var(--text);font-weight:500;}
 .rv-week-val{color:var(--muted);flex-shrink:0;}
+.rv-photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:12px;}
+.rv-photo-item{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--surface);}
+.rv-photo-img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.rv-photo-meta{font-size:10px;color:var(--muted);padding:5px 8px;font-weight:600;}
+.rv-photo-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:none;color:#fff;font-size:12px;border-radius:6px;padding:3px 8px;cursor:pointer;line-height:1;}
+.rv-photo-add{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--border2);border-radius:10px;padding:16px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;transition:border-color .15s,color .15s;}
+.rv-photo-add:hover{border-color:var(--teal-tx);color:var(--teal-tx);}
 </style>
 </head>
 <body>
@@ -245,7 +252,7 @@ nav::-webkit-scrollbar{display:none;}
 <div class="prog-wrap"><div class="prog-fill" id="prog-mon" style="width:0%"></div></div>
 <div class="slabel">Lats — pre-exhaust</div>
 <div class="ex-card " id="card-pullover">
-<div class="ex-header"><div class="ex-name">Machine or cable pullover</div><div class="doses"><div class="dpill dw">1 × 12 warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Cable pullover</div><div class="doses"><div class="dpill dw">1 × 12 warm-up</div><div class="dpill dwk">1 × 10–12 working</div></div></div>
 <div class="tags"><span class="tag t-iso">Pre-exhaust</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Initiate with the lats, not the arms. Full stretch overhead, hard squeeze at the bottom. Establishes the mind-muscle connection before any rowing.</div><div class="logger" id="logger-pullover"></div>
 <div id="notes-pullover"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Lats — compound rowing</div>
@@ -254,7 +261,7 @@ nav::-webkit-scrollbar{display:none;}
 <div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Slight forward lean (~30°), underhand grip, drive elbows back past the torso. Explosive pull, 3-sec lower. Rest-pause: re-grip, breathe 10–12 sec, squeeze out 2–3 more. The primary mass builder.</div><div class="logger" id="logger-yatesrow"></div>
 <div id="notes-yatesrow"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-cablerow">
-<div class="ex-header"><div class="ex-name">Seated cable row or Hammer Strength row</div><div class="doses"><div class="dpill dwk">1 × 8–10 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Seated Cable Row</div><div class="doses"><div class="dpill dwk">1 × 8–10 working</div></div></div>
 <div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Second rowing movement to fully inroad the mid-back and lats. Chest tall, drive elbows past the body, pause contracted.</div><div class="logger" id="logger-cablerow"></div>
 <div id="notes-cablerow"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'mon')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Lats — vertical pull</div>
@@ -274,7 +281,7 @@ nav::-webkit-scrollbar{display:none;}
 <div class="prog-wrap"><div class="prog-fill" id="prog-tue" style="width:0%"></div></div>
 <div class="slabel">Deltoids — pressing</div>
 <div class="ex-card " id="card-dbpress">
-<div class="ex-header"><div class="ex-name">Seated dumbbell press or Smith machine press</div><div class="doses"><div class="dpill dw">1–2 × 10 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Seated dumbbell press</div><div class="doses"><div class="dpill dw">1–2 × 10 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
 <div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Seated DB gives more ROM. Smith is safer at true failure solo. Controlled descent, drive through full range, rest-pause past failure.</div><div class="logger" id="logger-dbpress"></div>
 <div id="notes-dbpress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Deltoids — lateral + rear</div>
@@ -283,7 +290,7 @@ nav::-webkit-scrollbar{display:none;}
 <div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-fx">Forced reps</span></div><div class="ex-tip">Seated removes momentum — every rep is honest. Lead with the elbows, slight forward lean, slow 3-sec lowering. Forced reps extend past failure.</div><div class="logger" id="logger-lateralraise"></div>
 <div id="notes-lateralraise"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-reardelt">
-<div class="ex-header"><div class="ex-name">Rear deltoid raise or cable face pull</div><div class="doses"><div class="dpill dwk">1 × 12–15 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Cable face pull</div><div class="doses"><div class="dpill dwk">1 × 12–15 working</div></div></div>
 <div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Full range, avoid traps taking over. Rear delts protect the rotator cuff under heavy pressing load and tie the shoulder to the back visually.</div><div class="logger" id="logger-reardelt"></div>
 <div id="notes-reardelt"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Triceps</div>
@@ -292,7 +299,7 @@ nav::-webkit-scrollbar{display:none;}
 <div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Lock the elbows in place — forearm only. Full extension at the bottom, squeeze hard. Rest-pause to extend past failure.</div><div class="logger" id="logger-pushdown"></div>
 <div id="notes-pushdown"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-ohext">
-<div class="ex-header"><div class="ex-name">Overhead barbell or dumbbell extension</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Overhead cable extension</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
 <div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">The long head only reaches full stretch overhead — largest of the three heads. Control the negative carefully to protect the elbow joint.</div><div class="logger" id="logger-ohext"></div>
 <div id="notes-ohext"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'tue')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 </div>
@@ -340,20 +347,20 @@ nav::-webkit-scrollbar{display:none;}
 <div id="notes-inclinepress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Pectorals — mid + full</div>
 <div class="ex-card " id="card-machinepress">
-<div class="ex-header"><div class="ex-name">Machine incline press or flat dumbbell press</div><div class="doses"><div class="dpill dw">1 × 8 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Machine incline press</div><div class="doses"><div class="dpill dw">1 × 8 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
 <div class="tags"><span class="tag t-rp">Rest-pause</span><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Machine is safer at true failure without a spotter. Flat DB gives more stretch. Goal is maximum inroad after the incline barbell has taxed the upper chest.</div><div class="logger" id="logger-machinepress"></div>
 <div id="notes-machinepress"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-crossover">
-<div class="ex-header"><div class="ex-name">Cable crossover flyes or pec deck</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Cable crossover</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
 <div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-fx">Forced reps</span></div><div class="ex-tip">Hold the peak contraction 1–2 sec. The pec is already exhausted — you won't need much weight. Forced reps work well here.</div><div class="logger" id="logger-crossover"></div>
 <div id="notes-crossover"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="slabel">Biceps</div>
 <div class="ex-card " id="card-barcurl">
-<div class="ex-header"><div class="ex-name">Barbell or EZ bar curl</div><div class="doses"><div class="dpill dw">1 × 10 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
+<div class="ex-header"><div class="ex-name">EZ bar curl</div><div class="doses"><div class="dpill dw">1 × 10 warm-up</div><div class="dpill dwk">1 × 8–10 working</div></div></div>
 <div class="tags"><span class="tag t-neg">Slow neg</span></div><div class="ex-tip">Strict form — no body English. Biceps are pre-fatigued from Monday rows and pullups. Control the negative on every rep.</div><div class="logger" id="logger-barcurl"></div>
 <div id="notes-barcurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 <div class="ex-card " id="card-inclinecurl">
-<div class="ex-header"><div class="ex-name">Incline dumbbell curl or hammer curl</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
+<div class="ex-header"><div class="ex-name">Incline dumbbell curl</div><div class="doses"><div class="dpill dwk">1 × 10–12 working</div></div></div>
 <div class="tags"><span class="tag t-neg">Slow neg</span><span class="tag t-rp">Rest-pause</span></div><div class="ex-tip">Incline position puts the long head under maximum stretch. Full hang at the bottom, slow lowering. Rest-pause to extend past failure.</div><div class="logger" id="logger-inclinecurl"></div>
 <div id="notes-inclinecurl"></div><div class="check-row"><button class="check-btn" onclick="toggleCheck(this,'fri')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#5dcaa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="check-label">Mark done</span></div></div>
 </div>
@@ -466,7 +473,7 @@ nav::-webkit-scrollbar{display:none;}
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwWQPx3_ITeMh5N2n0qhSEnRG5D-nPYnI_f-m_wS-rUXm61plc0TC_mUpsuKYTt6b_0/exec";
 const REP_RANGES={pullover:[10,12],yatesrow:[6,8],cablerow:[8,10],pullups:[6,8],backext:[10,12],dbpress:[8,10],lateralraise:[10,12],reardelt:[12,15],pushdown:[10,12],ohext:[10,12],legext:[10,12],legpress:[8,10],hacksquat:[10,12],legcurl:[10,12],sldl:[8,10],calfraise:[12,15],inclinepress:[8,10],machinepress:[8,10],crossover:[10,12],barcurl:[8,10],inclinecurl:[10,12]};
-const EX_NAMES={pullover:'Machine/cable pullover',yatesrow:'Yates Row',cablerow:'Seated cable row',pullups:'Weighted pullups',backext:'Loaded back extension',dbpress:'Seated DB/Smith press',lateralraise:'Seated lateral raise',reardelt:'Rear delt raise/face pull',pushdown:'Cable pushdown',ohext:'Overhead extension',legext:'Leg extension',legpress:'Leg press',hacksquat:'Hack squat',legcurl:'Lying leg curl',sldl:'Stiff-leg deadlift',calfraise:'Standing calf raise',inclinepress:'Incline barbell press',machinepress:'Machine incline/flat DB press',crossover:'Cable crossover/pec deck',barcurl:'Barbell/EZ bar curl',inclinecurl:'Incline DB/hammer curl'};
+const EX_NAMES={pullover:'Cable pullover',yatesrow:'Yates Row',cablerow:'Seated Cable Row',pullups:'Weighted pullups',backext:'Loaded back extension',dbpress:'Seated dumbbell press',lateralraise:'Seated lateral raise',reardelt:'Cable face pull',pushdown:'Cable pushdown',ohext:'Overhead cable extension',legext:'Leg extension',legpress:'Leg press',hacksquat:'Hack squat',legcurl:'Lying leg curl',sldl:'Stiff-leg deadlift',calfraise:'Standing calf raise',inclinepress:'Incline barbell press',machinepress:'Machine incline press',crossover:'Cable crossover',barcurl:'EZ bar curl',inclinecurl:'Incline dumbbell curl'};
 const LOGGERS=Object.keys(REP_RANGES);
 const NAV_PAGES=['home','mon','tue','thu','fri','prs','review','wed','wknd'];
 const SWAP_ALTS={pullover:['Straight arm pulldown','Dumbbell pullover','Cable pullover'],yatesrow:['Barbell row overhand','Dumbbell row','Meadows row'],cablerow:['Hammer Strength row','Chest supported row','T-bar row'],pullups:['Lat pulldown close grip','Lat pulldown wide grip','Assisted pullup'],backext:['Good morning','45 degree back raise','Romanian deadlift'],dbpress:['Barbell overhead press','Arnold press','Machine shoulder press'],lateralraise:['Cable lateral raise','Machine lateral raise','Upright row'],reardelt:['Reverse pec deck','Cable rear delt fly','Band pull apart'],pushdown:['Rope pushdown','Single arm pushdown','Band pushdown'],ohext:['Skull crusher','Cable overhead extension','Single arm DB extension'],legext:['Single leg extension','Sissy squat','Spanish squat'],legpress:['Squat','Smith machine squat','Bulgarian split squat'],hacksquat:['Smith machine squat','Belt squat','Goblet squat'],legcurl:['Seated leg curl','Nordic curl','Single leg curl'],sldl:['Romanian deadlift','Good morning','Single leg RDL'],calfraise:['Seated calf raise','Leg press calf raise','Single leg calf raise'],inclinepress:['Low incline DB press','Machine incline press','Smith incline press'],machinepress:['Flat DB press','Flat barbell press','Cable chest press'],crossover:['Pec deck','Low cable fly','High cable fly'],barcurl:['Dumbbell curl','Cable curl','Preacher curl'],inclinecurl:['Concentration curl','Spider curl','Cable curl']};
@@ -771,8 +778,43 @@ function buildReview(){
   const weekData={};for(let w=1;w<=7;w++)weekData[w]=[];LOGGERS.forEach(id=>{load('hist_'+id,[]).forEach(e=>{if(e.week&&weekData[e.week])weekData[e.week].push({name:getExName(id),weight:e.weight,reps:e.reps,date:e.date});});});
   const hasWk=Object.values(weekData).some(a=>a.length);
   if(hasWk){html+=`<div class="rv-section"><div class="rv-section-title">Week by Week</div>`;for(let w=1;w<=7;w++){if(!weekData[w].length)continue;html+=`<div class="rv-week-block"><div class="rv-week-head">Week ${w} — ${WEEK_LABELS[w-1]}</div>`;weekData[w].forEach(e=>{html+=`<div class="rv-week-row"><span class="rv-week-name">${e.name}</span><span class="rv-week-val">${e.weight}kg × ${e.reps} · ${e.date}</span></div>`;});html+=`</div>`;}html+=`</div>`;}
+  const photos=load('progress_photos',[]);
+  let photosHTML=`<div class="rv-section"><div class="rv-section-title">Progress Photos</div>`;
+  if(photos.length){photosHTML+=`<div class="rv-photos-grid">`;photos.forEach((p,i)=>{photosHTML+=`<div class="rv-photo-item"><img src="${p.data}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">Week ${p.week} · ${p.date}</div><button class="rv-photo-del" onclick="deletePhoto(${i})">✕</button></div>`;});photosHTML+=`</div>`;}
+  photosHTML+=`<label class="rv-photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addProgressPhoto(this)"><span>+ Add progress photo</span></label></div>`;
+  html+=photosHTML;
   html+=`<div style="margin-top:8px"><button class="log-btn btn-save" style="width:100%;padding:12px" onclick="exportReport()">Export report as text</button></div>`;
   document.getElementById('page-review').innerHTML=html;
+}
+
+function addProgressPhoto(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.createElement('canvas');
+      const max=900;let w=img.width,h=img.height;
+      if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const data=canvas.toDataURL('image/jpeg',0.72);
+      const photos=load('progress_photos',[]);
+      photos.push({data,date:new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}),week:getProgramWeek()});
+      save('progress_photos',photos);
+      buildReview();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function deletePhoto(i){
+  if(!confirm('Remove this photo?'))return;
+  const photos=load('progress_photos',[]);
+  photos.splice(i,1);
+  save('progress_photos',photos);
+  buildReview();
 }
 
 function exportReport(){
