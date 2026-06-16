@@ -166,6 +166,12 @@ nav::-webkit-scrollbar{display:none;}
 .prog-nav-btn{padding:7px 11px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .1s;white-space:nowrap;}
 .prog-nav-btn:hover{background:var(--border2);}
 .prog-nav-btn:disabled{opacity:.35;cursor:default;}
+.prog-day-dots{display:flex;gap:14px;align-items:center;flex-shrink:0;}
+.prog-day-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.prog-day-dot{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--border2);background:transparent;transition:background .2s,border-color .2s;}
+.prog-day-dot.done{background:var(--teal-tx);border-color:var(--teal-tx);}
+.prog-day-label{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);}
+.day-done-notice{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.5;}
 .day-week-label{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--ambr-tx);background:var(--ambr-bg);padding:3px 10px;border-radius:99px;margin-bottom:10px;}
 .deload-notice{background:var(--ambr-bg);border:1px solid #5a3a00;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--ambr-tx);line-height:1.5;font-weight:500;}
 .rv-section{margin-bottom:20px;}
@@ -532,21 +538,48 @@ function load(k,d){try{const v=localStorage.getItem('hit_'+k);return v!==null?JS
 
 const WEEK_LABELS=['Foundation','Build','Build','Intensify','Intensify','Peak','Deload'];
 const TRAINING_DAYS=['mon','tue','thu','fri'];
+const DAY_EXERCISES={mon:['pullover','yatesrow','cablerow','pullups','backext'],tue:['dbpress','lateralraise','reardelt','pushdown','ohext'],thu:['legext','legpress','hacksquat','legcurl','sldl','calfraise'],fri:['inclinepress','machinepress','crossover','barcurl','inclinecurl']};
 function getProgramWeek(){return load('program_week',1);}
 function setProgramWeek(w){save('program_week',Math.max(1,Math.min(7,w)));}
-function changeWeek(delta){setProgramWeek(getProgramWeek()+delta);renderProgramBanner();TRAINING_DAYS.forEach(d=>{if(document.getElementById('page-'+d).classList.contains('active'))renderDayWeek(d);});}
+function getCompletedDays(){return load('completed_days',[]);}
+function saveCompletedDays(arr){save('completed_days',arr);}
+function recalculateWeek(completed){const w=Math.min(7,Math.floor(completed.length/4)+1);setProgramWeek(w);return w;}
+function getExerciseDay(exId){return Object.keys(DAY_EXERCISES).find(d=>DAY_EXERCISES[d].includes(exId))||null;}
+function completeDay(day){
+  const w=getProgramWeek();const key=`${day}_w${w}`;
+  let completed=getCompletedDays();
+  if(completed.includes(key))return;
+  completed.push(key);saveCompletedDays(completed);recalculateWeek(completed);
+  renderProgramBanner();
+  TRAINING_DAYS.forEach(d=>{if(document.getElementById('page-'+d).classList.contains('active'))renderDayWeek(d);});
+}
+function migrateCompletedDays(){
+  if(load('completed_days',null)!==null)return;
+  const completed=[];
+  Object.keys(DAY_EXERCISES).forEach(day=>{
+    if(DAY_EXERCISES[day].some(id=>load('hist_'+id,[]).length>0))completed.push(`${day}_w1`);
+  });
+  saveCompletedDays(completed);recalculateWeek(completed);
+}
 
 function renderProgramBanner(){
   const w=getProgramWeek();const el=document.getElementById('program-banner');if(!el)return;
-  el.innerHTML=`<div class="prog-banner"><div class="prog-banner-info"><div class="prog-banner-sub">Program progress</div><div class="prog-banner-week">Week ${w} of ${w===7?'7 — Deload':'6'}</div><div class="prog-banner-label">${WEEK_LABELS[w-1]}</div></div><div class="prog-nav-btns"><button class="prog-nav-btn" onclick="changeWeek(-1)"${w<=1?' disabled':''}>← Prev</button><button class="prog-nav-btn" onclick="changeWeek(1)"${w>=7?' disabled':''}>Next →</button></div></div>`;
+  const completed=getCompletedDays();
+  const dayLabels={mon:'Mon',tue:'Tue',thu:'Thu',fri:'Fri'};
+  const dots=Object.keys(DAY_EXERCISES).map(d=>`<div class="prog-day-dot-wrap"><div class="prog-day-dot${completed.includes(`${d}_w${w}`)?' done':''}"></div><div class="prog-day-label">${dayLabels[d]}</div></div>`).join('');
+  el.innerHTML=`<div class="prog-banner"><div class="prog-banner-info"><div class="prog-banner-sub">Program progress</div><div class="prog-banner-week">Week ${w} of ${w===7?'7 — Deload':'6'}</div><div class="prog-banner-label">${WEEK_LABELS[w-1]}</div></div><div class="prog-day-dots">${dots}</div></div>`;
 }
 
 function renderDayWeek(id){
   const page=document.getElementById('page-'+id);if(!page)return;
   let el=page.querySelector('.wk-notice');
   if(!el){el=document.createElement('div');el.className='wk-notice';page.insertBefore(el,page.firstChild);}
-  const w=getProgramWeek();
-  el.innerHTML=`<div class="day-week-label">Week ${w} · ${WEEK_LABELS[w-1]}</div>${w===7?'<div class="deload-notice">Deload week — use 40–50% of your working weight. Same exercises, same reps, zero failure. Focus on form and recovery.</div>':''}`;
+  const w=getProgramWeek();const completed=getCompletedDays();
+  const alreadyDone=completed.includes(`${id}_w${w}`);
+  let html=`<div class="day-week-label">Week ${w} · ${WEEK_LABELS[w-1]}</div>`;
+  if(w===7)html+=`<div class="deload-notice">Deload week — use 40–50% of your working weight. Same exercises, same reps, zero failure. Focus on form and recovery.</div>`;
+  else if(alreadyDone)html+=`<div class="day-done-notice">Day completed this week — logging additional sets will still be recorded.</div>`;
+  el.innerHTML=html;
 }
 
 function saveIncrement(){const v=parseFloat(document.getElementById('global-increment').value)||2.5;save('increment',v);}
@@ -675,6 +708,7 @@ async function logSet(id,rMin,rMax){
   const hist=load('hist_'+id,[]);
   hist.push(entry);
   save('hist_'+id,hist);
+  const day=getExerciseDay(id);if(day)completeDay(day);
 
   const noteEl = document.getElementById('noteinput-' + id);
   syncToSheets(entry, id, noteEl ? noteEl.value : '');
@@ -827,6 +861,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('global-increment').value=load('increment',2.5);
   LOGGERS.forEach(id=>{ buildLogger(id); buildNotes(id); });
   buildSwapButtons();
+  migrateCompletedDays();
   renderProgramBanner();
 });
 </script>
