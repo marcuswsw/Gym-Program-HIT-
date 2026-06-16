@@ -191,12 +191,14 @@ nav::-webkit-scrollbar{display:none;}
 .rv-week-row:last-child{border-bottom:none;}
 .rv-week-name{color:var(--text);font-weight:500;}
 .rv-week-val{color:var(--muted);flex-shrink:0;}
-.rv-photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:12px;}
+.rv-before-after{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.rv-ba-col{display:flex;flex-direction:column;gap:8px;}
+.rv-ba-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
 .rv-photo-item{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--surface);}
-.rv-photo-img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.rv-photo-img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;}
 .rv-photo-meta{font-size:10px;color:var(--muted);padding:5px 8px;font-weight:600;}
 .rv-photo-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:none;color:#fff;font-size:12px;border-radius:6px;padding:3px 8px;cursor:pointer;line-height:1;}
-.rv-photo-add{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--border2);border-radius:10px;padding:16px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;transition:border-color .15s,color .15s;}
+.rv-photo-add{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--border2);border-radius:10px;padding:22px 12px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:600;transition:border-color .15s,color .15s;text-align:center;}
 .rv-photo-add:hover{border-color:var(--teal-tx);color:var(--teal-tx);}
 </style>
 </head>
@@ -779,15 +781,19 @@ function buildReview(){
   const hasWk=Object.values(weekData).some(a=>a.length);
   if(hasWk){html+=`<div class="rv-section"><div class="rv-section-title">Week by Week</div>`;for(let w=1;w<=7;w++){if(!weekData[w].length)continue;html+=`<div class="rv-week-block"><div class="rv-week-head">Week ${w} — ${WEEK_LABELS[w-1]}</div>`;weekData[w].forEach(e=>{html+=`<div class="rv-week-row"><span class="rv-week-name">${e.name}</span><span class="rv-week-val">${e.weight}kg × ${e.reps} · ${e.date}</span></div>`;});html+=`</div>`;}html+=`</div>`;}
   const photos=load('progress_photos',[]);
-  let photosHTML=`<div class="rv-section"><div class="rv-section-title">Progress Photos</div>`;
-  if(photos.length){photosHTML+=`<div class="rv-photos-grid">`;photos.forEach((p,i)=>{photosHTML+=`<div class="rv-photo-item"><img src="${p.data}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">Week ${p.week} · ${p.date}</div><button class="rv-photo-del" onclick="deletePhoto(${i})">✕</button></div>`;});photosHTML+=`</div>`;}
-  photosHTML+=`<label class="rv-photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addProgressPhoto(this)"><span>+ Add progress photo</span></label></div>`;
+  const befores=photos.filter(p=>p.type==='before'||!p.type);
+  const afters=photos.filter(p=>p.type==='after');
+  function photoCard(p){const idx=photos.indexOf(p);return `<div class="rv-photo-item"><img src="${p.data}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">Week ${p.week} · ${p.date}</div><button class="rv-photo-del" onclick="deletePhoto(${idx})">✕</button></div>`;}
+  let photosHTML=`<div class="rv-section"><div class="rv-section-title">Progress Photos</div><div class="rv-before-after">`;
+  photosHTML+=`<div class="rv-ba-col"><div class="rv-ba-label">Before</div>${befores.map(photoCard).join('')}<label class="rv-photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addProgressPhoto(this,'before')"><span>+ Add Before</span></label></div>`;
+  photosHTML+=`<div class="rv-ba-col"><div class="rv-ba-label">After</div>${afters.map(photoCard).join('')}<label class="rv-photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addProgressPhoto(this,'after')"><span>+ Add After</span></label></div>`;
+  photosHTML+=`</div></div>`;
   html+=photosHTML;
   html+=`<div style="margin-top:8px"><button class="log-btn btn-save" style="width:100%;padding:12px" onclick="exportReport()">Export report as text</button></div>`;
   document.getElementById('page-review').innerHTML=html;
 }
 
-function addProgressPhoto(input){
+function addProgressPhoto(input,type){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=function(e){
@@ -800,7 +806,7 @@ function addProgressPhoto(input){
       canvas.getContext('2d').drawImage(img,0,0,w,h);
       const data=canvas.toDataURL('image/jpeg',0.72);
       const photos=load('progress_photos',[]);
-      photos.push({data,date:new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}),week:getProgramWeek()});
+      photos.push({data,date:new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}),week:getProgramWeek(),type:type||'before'});
       save('progress_photos',photos);
       buildReview();
     };
