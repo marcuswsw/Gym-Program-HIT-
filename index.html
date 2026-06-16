@@ -200,6 +200,10 @@ nav::-webkit-scrollbar{display:none;}
 .rv-photo-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:none;color:#fff;font-size:12px;border-radius:6px;padding:3px 8px;cursor:pointer;line-height:1;}
 .rv-photo-add{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--border2);border-radius:10px;padding:22px 12px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:600;transition:border-color .15s,color .15s;text-align:center;}
 .rv-photo-add:hover{border-color:var(--teal-tx);color:var(--teal-tx);}
+.sync-sheets-btn{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;margin-bottom:20px;width:100%;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);font-family:inherit;transition:border-color .15s,background .15s;}
+.sync-sheets-btn:hover{border-color:var(--teal-tx);background:var(--teal-bg);}
+.sync-sheets-btn:disabled{opacity:.5;cursor:default;}
+.sync-sheets-icon{font-size:15px;}
 </style>
 </head>
 <body>
@@ -601,6 +605,31 @@ async function syncToSheets(entry, exId, note) {
   }
 }
 
+async function importFromSheets(){
+  const btn=document.getElementById('sync-from-sheets-btn');
+  if(btn){btn.textContent='Syncing…';btn.disabled=true;}
+  try{
+    const resp=await fetch(GAS_URL);
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const rows=await resp.json();
+    const nameToId={};
+    Object.entries(EX_NAMES).forEach(([id,name])=>{nameToId[name.toLowerCase()]=id;});
+    const grouped={};
+    rows.forEach(row=>{
+      if(!row.exercise||!row.weight||!row.reps)return;
+      const id=nameToId[String(row.exercise).toLowerCase()];
+      if(!id)return;
+      if(!grouped[id])grouped[id]=[];
+      grouped[id].push({date:row.date,weight:Number(row.weight),reps:Number(row.reps),overloaded:!!row.overloaded});
+    });
+    Object.entries(grouped).forEach(([id,entries])=>save('hist_'+id,entries));
+    LOGGERS.forEach(id=>{buildLogger(id);});
+    buildReview();
+  }catch(e){
+    console.error('Import failed:',e);
+    if(btn){btn.textContent='Sync failed — see console';btn.disabled=false;setTimeout(()=>{btn.textContent='⇣ Sync from HIT Logs Sheet';},3000);}
+  }
+}
 
 function buildLogger(id){
   const el=document.getElementById('logger-'+id);
@@ -767,8 +796,9 @@ function buildReview(){
   let totalSets=0,totalPRs=0,firstEntry=null,lastEntry=null;
   LOGGERS.forEach(id=>{const h=load('hist_'+id,[]);totalSets+=h.length;totalPRs+=h.filter(e=>e.overloaded).length;if(h.length){if(!firstEntry)firstEntry=h[0];lastEntry=h[h.length-1];}});
   const tracked=LOGGERS.filter(id=>load('hist_'+id,[]).length>0).length;
-  if(totalSets===0){document.getElementById('page-review').innerHTML=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div><div style="color:var(--muted);font-size:14px;padding:24px 0;">Complete more sessions to generate your review.</div>`;return;}
-  let html=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>`;
+  const sheetSyncBtn=`<button class="sync-sheets-btn" id="sync-from-sheets-btn" onclick="importFromSheets()"><span class="sync-sheets-icon">⇣</span>Sync from HIT Logs Sheet</button>`;
+  if(totalSets===0){document.getElementById('page-review').innerHTML=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>${sheetSyncBtn}<div style="color:var(--muted);font-size:14px;padding:12px 0;">No local data — sync from Sheets to restore your history.</div>`;return;}
+  let html=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>${sheetSyncBtn}`;
   html+=`<div class="rv-section"><div class="rv-section-title">Program Summary</div><div class="rv-stat-grid"><div class="rv-stat"><div class="rv-stat-val">${week}</div><div class="rv-stat-label">Current week</div></div><div class="rv-stat"><div class="rv-stat-val">${totalSets}</div><div class="rv-stat-label">Total sets</div></div><div class="rv-stat"><div class="rv-stat-val">${totalPRs}</div><div class="rv-stat-label">Top-range hits</div></div><div class="rv-stat"><div class="rv-stat-val">${tracked}</div><div class="rv-stat-label">Exercises tracked</div></div></div>${firstEntry?`<div class="rv-dates">First session: <strong>${firstEntry.date}</strong> &nbsp;·&nbsp; Most recent: <strong>${lastEntry.date}</strong></div>`:''}</div>`;
   const prog=LOGGERS.map(id=>{const h=load('hist_'+id,[]);if(!h.length)return null;const first=h[0];const best=h.reduce((a,b)=>b.weight>a.weight?b:a);const added=+(best.weight-first.weight).toFixed(2);const pct=first.weight>0?+((added/first.weight)*100).toFixed(1):0;return{id,name:getExName(id),first,best,added,pct};}).filter(Boolean).sort((a,b)=>b.pct-a.pct);
   html+=`<div class="rv-section"><div class="rv-section-title">Strength Progression</div><div class="rv-prog-list">`;
