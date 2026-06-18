@@ -900,17 +900,22 @@ function buildReview(){
   let html=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>${sheetSyncBtn}`;
   html+=`<div class="rv-section"><div class="rv-section-title">Program Summary</div><div class="rv-stat-grid"><div class="rv-stat"><div class="rv-stat-val">${week}</div><div class="rv-stat-label">Current week</div></div><div class="rv-stat"><div class="rv-stat-val">${totalSets}</div><div class="rv-stat-label">Total sets</div></div><div class="rv-stat"><div class="rv-stat-val">${totalPRs}</div><div class="rv-stat-label">Top-range hits</div></div><div class="rv-stat"><div class="rv-stat-val">${tracked}</div><div class="rv-stat-label">Exercises tracked</div></div></div>${firstEntry?`<div class="rv-dates">First session: <strong>${firstEntry.date}</strong> &nbsp;·&nbsp; Most recent: <strong>${lastEntry.date}</strong></div>`:''}</div>`;
   const bwData=load('bodyweight',[]);
-  if(bwData.length>0){
-    const bwFirst=bwData[0],bwLast=bwData[bwData.length-1];
-    const bwDelta=+(bwLast.weight-bwFirst.weight).toFixed(1);
-    const bwDeltaStr=(bwDelta>=0?'+':'')+bwDelta+' kg';
-    let bodyHTML=`<div class="rv-section"><div class="rv-section-title">Body Composition</div><div class="rv-stat-grid"><div class="rv-stat"><div class="rv-stat-val">${bwFirst.weight} kg</div><div class="rv-stat-label">Start · ${bwFirst.date}</div></div><div class="rv-stat"><div class="rv-stat-val">${bwLast.weight} kg</div><div class="rv-stat-label">Now · ${bwLast.date}</div></div></div><div class="rv-dates">Change: <strong>${bwDeltaStr}</strong></div>`;
-    const bodyPhotos=load('photos',[]);
-    if(bodyPhotos.length>=1){
-      const si=0,li=bodyPhotos.length-1;
-      bodyHTML+=`<div class="rv-before-after" style="margin-top:12px"><div class="rv-ba-col"><div class="rv-ba-label">Start</div><div class="rv-photo-item" style="cursor:zoom-in" onclick="openBodyPhoto(${si})"><img src="${bodyPhotos[si].dataUrl}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">${bodyPhotos[si].date}</div></div></div>`;
-      if(bodyPhotos.length>=2)bodyHTML+=`<div class="rv-ba-col"><div class="rv-ba-label">Latest</div><div class="rv-photo-item" style="cursor:zoom-in" onclick="openBodyPhoto(${li})"><img src="${bodyPhotos[li].dataUrl}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">${bodyPhotos[li].date}</div></div></div>`;
-      bodyHTML+=`</div>`;
+  {
+    let bodyHTML=`<div class="rv-section"><div class="rv-section-title">Body Composition</div>`;
+    if(bwData.length>0){
+      const bwFirst=bwData[0],bwLast=bwData[bwData.length-1];
+      const bwDelta=+(bwLast.weight-bwFirst.weight).toFixed(1);
+      const bwDeltaStr=(bwDelta>=0?'+':'')+bwDelta+' kg';
+      bodyHTML+=`<div class="rv-stat-grid"><div class="rv-stat"><div class="rv-stat-val">${bwFirst.weight} kg</div><div class="rv-stat-label">Start · ${bwFirst.date}</div></div><div class="rv-stat"><div class="rv-stat-val">${bwLast.weight} kg</div><div class="rv-stat-label">Now · ${bwLast.date}</div></div></div><div class="rv-dates">Change: <strong>${bwDeltaStr}</strong></div>`;
+      const bodyPhotos=load('photos',[]);
+      if(bodyPhotos.length>=1){
+        const si=0,li=bodyPhotos.length-1;
+        bodyHTML+=`<div class="rv-before-after" style="margin-top:12px"><div class="rv-ba-col"><div class="rv-ba-label">Start</div><div class="rv-photo-item" style="cursor:zoom-in" onclick="openBodyPhoto(${si})"><img src="${bodyPhotos[si].dataUrl}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">${bodyPhotos[si].date}</div></div></div>`;
+        if(bodyPhotos.length>=2)bodyHTML+=`<div class="rv-ba-col"><div class="rv-ba-label">Latest</div><div class="rv-photo-item" style="cursor:zoom-in" onclick="openBodyPhoto(${li})"><img src="${bodyPhotos[li].dataUrl}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">${bodyPhotos[li].date}</div></div></div>`;
+        bodyHTML+=`</div>`;
+      }
+    }else{
+      bodyHTML+=`<div style="color:var(--muted);font-size:13px;padding:4px 0;">No bodyweight data logged yet — add entries in the Body tab to track your composition progress here.</div>`;
     }
     bodyHTML+=`</div>`;
     html+=bodyHTML;
