@@ -211,6 +211,9 @@ nav::-webkit-scrollbar{display:none;}
 .ls-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:5px;line-height:1.4;}
 .stall-warn{background:var(--ambr-bg);border:1px solid #5a3a00;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--ambr-tx);line-height:1.5;font-weight:500;}
 .prog-stall-banner{background:var(--ambr-bg);border:1px solid #5a3a00;border-radius:10px;padding:12px 14px;margin-top:10px;font-size:13px;color:var(--ambr-tx);line-height:1.5;font-weight:500;}
+#photo-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);align-items:center;justify-content:center;cursor:zoom-out;}
+#photo-overlay.open{display:flex;}
+.photo-overlay-img{max-width:92vw;max-height:88vh;border-radius:10px;object-fit:contain;}
 </style>
 </head>
 <body>
@@ -870,6 +873,23 @@ function saveNote(id) {
   if (status) { status.textContent = 'Saved'; setTimeout(() => { status.textContent = ''; }, 1500); }
 }
 
+function openPhotoOverlay(src){
+  const el=document.getElementById('photo-overlay');
+  const img=document.getElementById('photo-overlay-img');
+  if(!el||!img)return;
+  img.src=src;
+  el.classList.add('open');
+}
+function closePhotoOverlay(){
+  const el=document.getElementById('photo-overlay');
+  if(el)el.classList.remove('open');
+}
+function openBodyPhoto(idx){
+  const photos=load('photos',[]);
+  const p=photos[idx];
+  if(p&&p.dataUrl)openPhotoOverlay(p.dataUrl);
+}
+
 function buildReview(){
   const week=getProgramWeek();
   let totalSets=0,totalPRs=0,firstEntry=null,lastEntry=null;
@@ -879,6 +899,22 @@ function buildReview(){
   if(totalSets===0){document.getElementById('page-review').innerHTML=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>${sheetSyncBtn}<div style="color:var(--muted);font-size:14px;padding:12px 0;">No local data — sync from Sheets to restore your history.</div>`;return;}
   let html=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>${sheetSyncBtn}`;
   html+=`<div class="rv-section"><div class="rv-section-title">Program Summary</div><div class="rv-stat-grid"><div class="rv-stat"><div class="rv-stat-val">${week}</div><div class="rv-stat-label">Current week</div></div><div class="rv-stat"><div class="rv-stat-val">${totalSets}</div><div class="rv-stat-label">Total sets</div></div><div class="rv-stat"><div class="rv-stat-val">${totalPRs}</div><div class="rv-stat-label">Top-range hits</div></div><div class="rv-stat"><div class="rv-stat-val">${tracked}</div><div class="rv-stat-label">Exercises tracked</div></div></div>${firstEntry?`<div class="rv-dates">First session: <strong>${firstEntry.date}</strong> &nbsp;·&nbsp; Most recent: <strong>${lastEntry.date}</strong></div>`:''}</div>`;
+  const bwData=load('bodyweight',[]);
+  if(bwData.length>0){
+    const bwFirst=bwData[0],bwLast=bwData[bwData.length-1];
+    const bwDelta=+(bwLast.weight-bwFirst.weight).toFixed(1);
+    const bwDeltaStr=(bwDelta>=0?'+':'')+bwDelta+' kg';
+    let bodyHTML=`<div class="rv-section"><div class="rv-section-title">Body Composition</div><div class="rv-stat-grid"><div class="rv-stat"><div class="rv-stat-val">${bwFirst.weight} kg</div><div class="rv-stat-label">Start · ${bwFirst.date}</div></div><div class="rv-stat"><div class="rv-stat-val">${bwLast.weight} kg</div><div class="rv-stat-label">Now · ${bwLast.date}</div></div></div><div class="rv-dates">Change: <strong>${bwDeltaStr}</strong></div>`;
+    const bodyPhotos=load('photos',[]);
+    if(bodyPhotos.length>=1){
+      const si=0,li=bodyPhotos.length-1;
+      bodyHTML+=`<div class="rv-before-after" style="margin-top:12px"><div class="rv-ba-col"><div class="rv-ba-label">Start</div><div class="rv-photo-item" style="cursor:zoom-in" onclick="openBodyPhoto(${si})"><img src="${bodyPhotos[si].dataUrl}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">${bodyPhotos[si].date}</div></div></div>`;
+      if(bodyPhotos.length>=2)bodyHTML+=`<div class="rv-ba-col"><div class="rv-ba-label">Latest</div><div class="rv-photo-item" style="cursor:zoom-in" onclick="openBodyPhoto(${li})"><img src="${bodyPhotos[li].dataUrl}" class="rv-photo-img" loading="lazy"><div class="rv-photo-meta">${bodyPhotos[li].date}</div></div></div>`;
+      bodyHTML+=`</div>`;
+    }
+    bodyHTML+=`</div>`;
+    html+=bodyHTML;
+  }
   const prog=LOGGERS.map(id=>{const h=load('hist_'+id,[]);if(!h.length)return null;const first=h[0];const best=h.reduce((a,b)=>b.weight>a.weight?b:a);const added=+(best.weight-first.weight).toFixed(2);const pct=first.weight>0?+((added/first.weight)*100).toFixed(1):0;return{id,name:getExName(id),first,best,added,pct};}).filter(Boolean).sort((a,b)=>b.pct-a.pct);
   html+=`<div class="rv-section"><div class="rv-section-title">Strength Progression</div><div class="rv-prog-list">`;
   prog.forEach(d=>{const cls=d.added>0?'improved':d.added<0?'declined':'';html+=`<div class="rv-prog-row ${cls}"><div class="rv-prog-name">${d.name}</div><div class="rv-prog-data"><span>${d.first.weight}kg</span><span class="rv-prog-arrow">→</span><span class="rv-prog-to">${d.best.weight}kg</span><span class="rv-prog-delta${d.added>0?' pos':d.added<0?' neg':''}">${d.added>0?'+':''}${d.added}kg${d.pct!==0?` (${d.pct}%)`:''}${d.best.week?` Wk${d.best.week}`:''}</span></div></div>`;});
@@ -936,6 +972,8 @@ function exportReport(){
   const week=getProgramWeek();const lines=[`DORIAN YATES HIT — PROGRAM REVIEW`,`Generated: ${new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}`,`Current week: ${week} — ${WEEK_LABELS[week-1]}`,``];
   let ts=0,tp=0;LOGGERS.forEach(id=>{const h=load('hist_'+id,[]);ts+=h.length;tp+=h.filter(e=>e.overloaded).length;});
   lines.push(`SUMMARY`,`Total sets: ${ts}`,`Top-range hits: ${tp}`,`Exercises tracked: ${LOGGERS.filter(id=>load('hist_'+id,[]).length>0).length}`,``);
+  const expBw=load('bodyweight',[]);
+  if(expBw.length>0){const ebf=expBw[0],ebl=expBw[expBw.length-1];const ebd=+(ebl.weight-ebf.weight).toFixed(1);lines.push(`BODY COMPOSITION`,`Start: ${ebf.weight} kg (${ebf.date})`,`Current: ${ebl.weight} kg (${ebl.date})`,`Change: ${ebd>=0?'+':''}${ebd} kg`,`Period: ${ebf.date} → ${ebl.date}`);const expPh=load('photos',[]);if(expPh.length>0)lines.push(`Progress photos: ${expPh.length}`);lines.push('');}
   lines.push(`STRENGTH PROGRESSION`);LOGGERS.forEach(id=>{const h=load('hist_'+id,[]);if(!h.length)return;const f=h[0];const b=h.reduce((a,c)=>c.weight>a.weight?c:a);const added=+(b.weight-f.weight).toFixed(2);const pct=f.weight>0?+((added/f.weight)*100).toFixed(1):0;lines.push(`${getExName(id)}: ${f.weight}kg → ${b.weight}kg (${added>=0?'+':''}${added}kg, ${pct}%)`);});lines.push('');
   lines.push(`NOTES`);LOGGERS.forEach(id=>{const n=load('notes_'+id,'');if(n.trim())lines.push(`${getExName(id)}: ${n.trim()}`);});lines.push('');
   lines.push(`WEEK BY WEEK`);for(let w=1;w<=7;w++){const rows=[];LOGGERS.forEach(id=>{load('hist_'+id,[]).filter(e=>e.week===w).forEach(e=>rows.push(`  ${getExName(id)}: ${e.weight}kg × ${e.reps} (${e.date})`));});if(rows.length){lines.push(`Week ${w} — ${WEEK_LABELS[w-1]}`);rows.forEach(r=>lines.push(r));}}
@@ -954,6 +992,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadFromSheets();
 });
 </script>
+<div id="photo-overlay" onclick="closePhotoOverlay()">
+  <img id="photo-overlay-img" class="photo-overlay-img" src="" alt="">
+</div>
 <div id="swap-overlay" onclick="closeSwap()">
   <div class="swap-sheet" onclick="event.stopPropagation()">
     <div class="swap-sheet-header">
