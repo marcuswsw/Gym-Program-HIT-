@@ -227,6 +227,7 @@ nav::-webkit-scrollbar{display:none;}
 <button class="nav-btn" onclick="showPage('fri')">Fri · Chest</button>
 <button class="nav-btn" onclick="showPage('prs')">PR Board</button>
 <button class="nav-btn" onclick="showPage('review')">Review</button>
+<button class="nav-btn" onclick="showPage('body')">Body</button>
 <div class="nav-div"></div>
 <button class="nav-btn" onclick="showPage('wed')">Wed · Mobility</button>
 <button class="nav-btn" onclick="showPage('wknd')">Sat/Sun · Mobility</button>
@@ -487,12 +488,13 @@ nav::-webkit-scrollbar{display:none;}
 </div>
 <div id="page-prs" class="page"></div>
 <div id="page-review" class="page"></div>
+<div id="page-body" class="page"></div>
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxaVQfeEb_QbUgzrn-hk5I48b4bxjcEEMKx-y5NWwDr9BZuF4fs_BxOubXjvCkbXUVn/exec";
 const REP_RANGES={pullover:[10,12],yatesrow:[6,8],cablerow:[8,10],pullups:[6,8],backext:[10,12],dbpress:[8,10],lateralraise:[10,12],reardelt:[12,15],pushdown:[10,12],ohext:[10,12],legext:[10,12],legpress:[8,10],hacksquat:[10,12],legcurl:[10,12],sldl:[8,10],calfraise:[12,15],inclinepress:[8,10],machinepress:[8,10],crossover:[10,12],barcurl:[8,10],inclinecurl:[10,12]};
 const EX_NAMES={pullover:'Machine/cable pullover',yatesrow:'Yates Row',cablerow:'Seated cable row',pullups:'Weighted pullups',backext:'Loaded back extension',dbpress:'Seated DB/Smith press',lateralraise:'Seated lateral raise',reardelt:'Rear delt raise/face pull',pushdown:'Cable pushdown',ohext:'Cable overhead extension',legext:'Leg extension',legpress:'Leg press',hacksquat:'Hack squat',legcurl:'Lying leg curl',sldl:'Stiff-leg deadlift',calfraise:'Standing calf raise',inclinepress:'Incline barbell press',machinepress:'Machine chest press',crossover:'Cable crossover/pec deck',barcurl:'Barbell/EZ bar curl',inclinecurl:'Incline DB/hammer curl'};
 const LOGGERS=Object.keys(REP_RANGES);
-const NAV_PAGES=['home','mon','tue','thu','fri','prs','review','wed','wknd'];
+const NAV_PAGES=['home','mon','tue','thu','fri','prs','review','body','wed','wknd'];
 const SWAP_ALTS={pullover:['Straight arm pulldown','Dumbbell pullover','Cable pullover'],yatesrow:['Barbell row overhand','Dumbbell row','Meadows row'],cablerow:['Hammer Strength row','Chest supported row','T-bar row'],pullups:['Lat pulldown close grip','Lat pulldown wide grip','Assisted pullup'],backext:['Good morning','45 degree back raise','Romanian deadlift'],dbpress:['Barbell overhead press','Arnold press','Machine shoulder press'],lateralraise:['Cable lateral raise','Machine lateral raise','Upright row'],reardelt:['Reverse pec deck','Cable rear delt fly','Band pull apart'],pushdown:['Rope pushdown','Single arm pushdown','Band pushdown'],ohext:['Skull crusher','Cable overhead extension','Single arm DB extension'],legext:['Single leg extension','Sissy squat','Spanish squat'],legpress:['Squat','Smith machine squat','Bulgarian split squat'],hacksquat:['Smith machine squat','Belt squat','Goblet squat'],legcurl:['Seated leg curl','Nordic curl','Single leg curl'],sldl:['Romanian deadlift','Good morning','Single leg RDL'],calfraise:['Seated calf raise','Leg press calf raise','Single leg calf raise'],inclinepress:['Low incline DB press','Machine incline press','Smith incline press'],machinepress:['Flat DB press','Flat barbell press','Cable chest press'],crossover:['Pec deck','Low cable fly','High cable fly'],barcurl:['Dumbbell curl','Cable curl','Preacher curl'],inclinecurl:['Concentration curl','Spider curl','Cable curl']};
 const _swappedNames={};
 let _swapTargetId=null;
@@ -838,6 +840,7 @@ function showPage(id){
   window.scrollTo(0,0);
   if(id==='prs')buildPRBoard();
   if(id==='review')buildReview();
+  if(id==='body')buildBody();
   if(id==='home')renderProgramBanner();
   if(TRAINING_DAYS.includes(id))renderDayWeek(id);
 }
@@ -871,6 +874,83 @@ function saveNote(id) {
   save('notes_' + id, val);
   const status = document.getElementById('notestatus-' + id);
   if (status) { status.textContent = 'Saved'; setTimeout(() => { status.textContent = ''; }, 1500); }
+}
+
+function buildBody(){
+  const bwData=load('bodyweight',[]);
+  const photos=load('photos',[]);
+  let html=`<div class="day-ey">Body</div><div class="day-title" style="margin-bottom:4px">Body Composition</div><div class="day-note" style="margin-bottom:20px">Track bodyweight and progress photos across the program.</div>`;
+  html+=`<div class="slabel">Log bodyweight</div>`;
+  html+=`<div class="settings-bar" style="gap:10px"><input class="log-input" type="number" id="bw-input" placeholder="kg" step="0.1" min="30"><span class="unit-label">kg</span><button class="log-btn btn-save" onclick="logBodyweight()">Log</button></div>`;
+  if(bwData.length>0){
+    html+=`<div class="history-wrap" style="margin-bottom:20px"><div class="history-title">Weight log</div>`;
+    bwData.slice().reverse().forEach((e,i)=>{
+      const ri=bwData.length-1-i;
+      html+=`<div class="history-row"><span class="history-date">${e.date}</span><span class="history-val">${e.weight} kg</span><button onclick="deleteBodyweight(${ri})" style="margin-left:auto;background:transparent;border:none;color:var(--faint);font-size:15px;cursor:pointer;line-height:1;padding:0 4px">✕</button></div>`;
+    });
+    html+=`</div>`;
+  }else{
+    html+=`<div style="color:var(--muted);font-size:13px;padding:6px 0 20px">No entries yet.</div>`;
+  }
+  html+=`<div class="slabel">Progress photos</div>`;
+  html+=`<label class="rv-photo-add" style="margin-bottom:12px;display:flex"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addBodyPhoto(this)"><span>+ Add photo</span></label>`;
+  if(photos.length>0){
+    html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
+    photos.forEach((p,i)=>{
+      html+=`<div class="rv-photo-item"><img src="${p.dataUrl}" class="rv-photo-img" loading="lazy" style="cursor:zoom-in" onclick="openBodyPhoto(${i})"><div class="rv-photo-meta">${p.date}</div><button class="rv-photo-del" onclick="deleteBodyPhoto(${i})">✕</button></div>`;
+    });
+    html+=`</div>`;
+  }
+  document.getElementById('page-body').innerHTML=html;
+}
+
+function logBodyweight(){
+  const inp=document.getElementById('bw-input');
+  const w=parseFloat(inp.value);
+  if(!w||w<30||w>300){alert('Enter a valid weight between 30 and 300 kg.');return;}
+  const today=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+  const data=load('bodyweight',[]);
+  data.push({date:today,weight:w});
+  save('bodyweight',data);
+  buildBody();
+}
+
+function deleteBodyweight(i){
+  if(!confirm('Remove this entry?'))return;
+  const data=load('bodyweight',[]);
+  data.splice(i,1);
+  save('bodyweight',data);
+  buildBody();
+}
+
+function addBodyPhoto(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.createElement('canvas');
+      const max=900;let w=img.width,h=img.height;
+      if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL('image/jpeg',0.72);
+      const photos=load('photos',[]);
+      photos.push({date:new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}),dataUrl});
+      save('photos',photos);
+      buildBody();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function deleteBodyPhoto(i){
+  if(!confirm('Remove this photo?'))return;
+  const photos=load('photos',[]);
+  photos.splice(i,1);
+  save('photos',photos);
+  buildBody();
 }
 
 function openPhotoOverlay(src){
