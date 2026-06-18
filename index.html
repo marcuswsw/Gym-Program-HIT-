@@ -220,6 +220,7 @@ nav::-webkit-scrollbar{display:none;}
 <div class="nav-div"></div>
 <button class="nav-btn" onclick="showPage('wed')">Wed · Mobility</button>
 <button class="nav-btn" onclick="showPage('wknd')">Sat/Sun · Mobility</button>
+<span id="sync-status" style="font-size:11px;color:var(--muted);margin-left:auto;padding-right:6px;flex-shrink:0;white-space:nowrap;"></span>
 </nav>
 <div id="page-home" class="page active">
 <div id="program-banner"></div>
@@ -479,7 +480,7 @@ nav::-webkit-scrollbar{display:none;}
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwWQPx3_ITeMh5N2n0qhSEnRG5D-nPYnI_f-m_wS-rUXm61plc0TC_mUpsuKYTt6b_0/exec";
 const REP_RANGES={pullover:[10,12],yatesrow:[6,8],cablerow:[8,10],pullups:[6,8],backext:[10,12],dbpress:[8,10],lateralraise:[10,12],reardelt:[12,15],pushdown:[10,12],ohext:[10,12],legext:[10,12],legpress:[8,10],hacksquat:[10,12],legcurl:[10,12],sldl:[8,10],calfraise:[12,15],inclinepress:[8,10],machinepress:[8,10],crossover:[10,12],barcurl:[8,10],inclinecurl:[10,12]};
-const EX_NAMES={pullover:'Cable pullover',yatesrow:'Yates Row',cablerow:'Seated Cable Row',pullups:'Weighted pullups',backext:'Loaded back extension',dbpress:'Seated dumbbell press',lateralraise:'Seated lateral raise',reardelt:'Cable face pull',pushdown:'Cable pushdown',ohext:'Overhead cable extension',legext:'Leg extension',legpress:'Leg press',hacksquat:'Hack squat',legcurl:'Lying leg curl',sldl:'Stiff-leg deadlift',calfraise:'Standing calf raise',inclinepress:'Incline barbell press',machinepress:'Machine incline press',crossover:'Cable crossover',barcurl:'EZ bar curl',inclinecurl:'Incline dumbbell curl'};
+const EX_NAMES={pullover:'Machine/cable pullover',yatesrow:'Yates Row',cablerow:'Seated cable row',pullups:'Weighted pullups',backext:'Loaded back extension',dbpress:'Seated DB/Smith press',lateralraise:'Seated lateral raise',reardelt:'Rear delt raise/face pull',pushdown:'Cable pushdown',ohext:'Cable overhead extension',legext:'Leg extension',legpress:'Leg press',hacksquat:'Hack squat',legcurl:'Lying leg curl',sldl:'Stiff-leg deadlift',calfraise:'Standing calf raise',inclinepress:'Incline barbell press',machinepress:'Machine chest press',crossover:'Cable crossover/pec deck',barcurl:'Barbell/EZ bar curl',inclinecurl:'Incline DB/hammer curl'};
 const LOGGERS=Object.keys(REP_RANGES);
 const NAV_PAGES=['home','mon','tue','thu','fri','prs','review','wed','wknd'];
 const SWAP_ALTS={pullover:['Straight arm pulldown','Dumbbell pullover','Cable pullover'],yatesrow:['Barbell row overhand','Dumbbell row','Meadows row'],cablerow:['Hammer Strength row','Chest supported row','T-bar row'],pullups:['Lat pulldown close grip','Lat pulldown wide grip','Assisted pullup'],backext:['Good morning','45 degree back raise','Romanian deadlift'],dbpress:['Barbell overhead press','Arnold press','Machine shoulder press'],lateralraise:['Cable lateral raise','Machine lateral raise','Upright row'],reardelt:['Reverse pec deck','Cable rear delt fly','Band pull apart'],pushdown:['Rope pushdown','Single arm pushdown','Band pushdown'],ohext:['Skull crusher','Cable overhead extension','Single arm DB extension'],legext:['Single leg extension','Sissy squat','Spanish squat'],legpress:['Squat','Smith machine squat','Bulgarian split squat'],hacksquat:['Smith machine squat','Belt squat','Goblet squat'],legcurl:['Seated leg curl','Nordic curl','Single leg curl'],sldl:['Romanian deadlift','Good morning','Single leg RDL'],calfraise:['Seated calf raise','Leg press calf raise','Single leg calf raise'],inclinepress:['Low incline DB press','Machine incline press','Smith incline press'],machinepress:['Flat DB press','Flat barbell press','Cable chest press'],crossover:['Pec deck','Low cable fly','High cable fly'],barcurl:['Dumbbell curl','Cable curl','Preacher curl'],inclinecurl:['Concentration curl','Spider curl','Cable curl']};
@@ -605,29 +606,46 @@ async function syncToSheets(entry, exId, note) {
   }
 }
 
-async function importFromSheets(){
-  const btn=document.getElementById('sync-from-sheets-btn');
-  if(btn){btn.textContent='Syncing…';btn.disabled=true;}
+function buildReverseNameMap(){
+  const map={};
+  Object.entries(EX_NAMES).forEach(([id,name])=>{map[name.toLowerCase()]=id;});
+  // Alternate names that appear in the sheet alongside the canonical names
+  map['cable overhead extension']='ohext';
+  map['overhead extension']='ohext';
+  map['machine chest press']='machinepress';
+  map['machine incline/flat db press']='machinepress';
+  return map;
+}
+
+async function loadFromSheets(){
+  const statusEl=document.getElementById('sync-status');
+  if(statusEl)statusEl.textContent='Syncing...';
   try{
     const resp=await fetch(GAS_URL);
     if(!resp.ok)throw new Error('HTTP '+resp.status);
     const rows=await resp.json();
-    const nameToId={};
-    Object.entries(EX_NAMES).forEach(([id,name])=>{nameToId[name.toLowerCase()]=id;});
+    const nameToId=buildReverseNameMap();
     const grouped={};
     rows.forEach(row=>{
       if(!row.exercise||!row.weight||!row.reps)return;
       const id=nameToId[String(row.exercise).toLowerCase()];
-      if(!id)return;
+      if(!id){console.log('Sheets: no match for exercise name:',row.exercise);return;}
       if(!grouped[id])grouped[id]=[];
-      grouped[id].push({date:row.date,weight:Number(row.weight),reps:Number(row.reps),overloaded:!!row.overloaded});
+      const entry={date:row.date,weight:Number(row.weight),reps:Number(row.reps),overloaded:!!row.overloaded};
+      if(row.week)entry.week=Number(row.week);
+      grouped[id].push(entry);
     });
     Object.entries(grouped).forEach(([id,entries])=>save('hist_'+id,entries));
     LOGGERS.forEach(id=>{buildLogger(id);});
+    buildPRBoard();
+    renderProgramBanner();
     buildReview();
+    const activeTraining=TRAINING_DAYS.find(d=>document.getElementById('page-'+d).classList.contains('active'));
+    if(activeTraining)renderDayWeek(activeTraining);
+    if(statusEl){statusEl.textContent='Synced ✓';setTimeout(()=>{statusEl.textContent='';},3000);}
   }catch(e){
-    console.error('Import failed:',e);
-    if(btn){btn.textContent='Sync failed — see console';btn.disabled=false;setTimeout(()=>{btn.textContent='⇣ Sync from HIT Logs Sheet';},3000);}
+    console.warn('loadFromSheets failed:',e);
+    if(statusEl){statusEl.textContent='Sync failed';setTimeout(()=>{statusEl.textContent='';},4000);}
   }
 }
 
@@ -796,7 +814,7 @@ function buildReview(){
   let totalSets=0,totalPRs=0,firstEntry=null,lastEntry=null;
   LOGGERS.forEach(id=>{const h=load('hist_'+id,[]);totalSets+=h.length;totalPRs+=h.filter(e=>e.overloaded).length;if(h.length){if(!firstEntry)firstEntry=h[0];lastEntry=h[h.length-1];}});
   const tracked=LOGGERS.filter(id=>load('hist_'+id,[]).length>0).length;
-  const sheetSyncBtn=`<button class="sync-sheets-btn" id="sync-from-sheets-btn" onclick="importFromSheets()"><span class="sync-sheets-icon">⇣</span>Sync from HIT Logs Sheet</button>`;
+  const sheetSyncBtn=`<button class="sync-sheets-btn" id="sync-from-sheets-btn" onclick="loadFromSheets()"><span class="sync-sheets-icon">⇣</span>Sync from HIT Logs Sheet</button>`;
   if(totalSets===0){document.getElementById('page-review').innerHTML=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>${sheetSyncBtn}<div style="color:var(--muted);font-size:14px;padding:12px 0;">No local data — sync from Sheets to restore your history.</div>`;return;}
   let html=`<div class="day-ey">Program Review</div><div class="day-title" style="margin-bottom:16px">Review</div>${sheetSyncBtn}`;
   html+=`<div class="rv-section"><div class="rv-section-title">Program Summary</div><div class="rv-stat-grid"><div class="rv-stat"><div class="rv-stat-val">${week}</div><div class="rv-stat-label">Current week</div></div><div class="rv-stat"><div class="rv-stat-val">${totalSets}</div><div class="rv-stat-label">Total sets</div></div><div class="rv-stat"><div class="rv-stat-val">${totalPRs}</div><div class="rv-stat-label">Top-range hits</div></div><div class="rv-stat"><div class="rv-stat-val">${tracked}</div><div class="rv-stat-label">Exercises tracked</div></div></div>${firstEntry?`<div class="rv-dates">First session: <strong>${firstEntry.date}</strong> &nbsp;·&nbsp; Most recent: <strong>${lastEntry.date}</strong></div>`:''}</div>`;
@@ -872,6 +890,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   buildSwapButtons();
   migrateCompletedDays();
   renderProgramBanner();
+  loadFromSheets();
 });
 </script>
 <div id="swap-overlay" onclick="closeSwap()">
