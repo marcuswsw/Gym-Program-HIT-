@@ -204,6 +204,11 @@ nav::-webkit-scrollbar{display:none;}
 .sync-sheets-btn:hover{border-color:var(--teal-tx);background:var(--teal-bg);}
 .sync-sheets-btn:disabled{opacity:.5;cursor:default;}
 .sync-sheets-icon{font-size:15px;}
+.last-session{border-left:3px solid var(--teal-tx);background:var(--surface2);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:12px;}
+.last-session.ls-empty{border-left-color:var(--faint);color:var(--muted);font-size:12px;font-style:italic;}
+.ls-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.ls-main{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.ls-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:5px;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -675,8 +680,17 @@ function buildLogger(id){
   const last=history[history.length-1];
   const sugW=last&&last.overloaded?+(last.weight+getIncrement()).toFixed(2):(last?last.weight:0);
 
-  let repBtns='';
-  for(let r=rMin;r<=rMax;r++)repBtns+=`<button class="rep-btn" onclick="selRep('${id}',${r},this)">${r}</button>`;
+  let quickBtns='';
+  for(let r=rMin;r<=rMax;r++)quickBtns+=`<button class="rep-btn" onclick="selRep('${id}',${r})">${r}</button>`;
+
+  let lastHTML='';
+  if(last){
+    const pr=last.overloaded?'<span class="history-badge">PR</span>':'';
+    const noteStr=last.note&&last.note.trim()?`<div class="ls-note">${last.note.trim()}</div>`:'';
+    lastHTML=`<div class="last-session"><div class="ls-label">Last session</div><div class="ls-main">${last.weight} kg &times; ${last.reps} reps &middot; ${last.date}${pr}</div>${noteStr}</div>`;
+  }else{
+    lastHTML=`<div class="last-session ls-empty">First time logging this exercise</div>`;
+  }
 
   let histHTML='';
   if(history.length>0){
@@ -688,26 +702,28 @@ function buildLogger(id){
     histHTML+='</div>';
   }
 
-  el.innerHTML=`<div class="logger-row"><span class="logger-label">Weight</span><input class="log-input" type="number" id="w-${id}" value="${sugW||''}" placeholder="kg" step="0.5" min="0"><span class="unit-label">kg</span></div><div class="logger-row"><span class="logger-label">Reps</span><div class="rep-btns" id="reps-${id}">${repBtns}</div></div><div class="logger-actions"><button class="log-btn btn-save" onclick="logSet('${id}',${rMin},${rMax})">Save set</button><button class="log-btn btn-clear" onclick="clearHist('${id}')">Clear history</button></div><div id="banner-${id}"></div>${histHTML}`;
+  el.innerHTML=`${lastHTML}<div class="logger-row"><span class="logger-label">Weight</span><input class="log-input" type="number" id="w-${id}" value="${sugW||''}" placeholder="kg" step="0.5" min="0"><span class="unit-label">kg</span></div><div class="logger-row"><span class="logger-label">Reps</span><input class="log-input" type="number" id="r-${id}" placeholder="reps" min="1" max="50" step="1"><span class="unit-label" style="font-size:11px;color:var(--faint)">target: ${rMin}–${rMax}</span></div><div class="logger-row" style="margin-top:-2px"><span class="logger-label"></span><div class="rep-btns" id="reps-${id}">${quickBtns}</div></div><div class="logger-actions"><button class="log-btn btn-save" onclick="logSet('${id}',${rMin},${rMax})">Save set</button><button class="log-btn btn-clear" onclick="clearHist('${id}')">Clear history</button></div><div id="banner-${id}"></div>${histHTML}`;
 
   if(last&&last.overloaded&&sugW)showBanner(id,`Add weight next session &#8594; target <strong>${sugW}kg</strong>`,true);
 }
 
-function selRep(id,rep,btn){
-  document.querySelectorAll(`#reps-${id} .rep-btn`).forEach(b=>b.classList.remove('rep-active'));
-  btn.classList.add('rep-active');
+function selRep(id,rep){
+  const inp=document.getElementById('r-'+id);
+  if(inp){inp.value=rep;inp.focus();}
 }
 
 function getRep(id){
-  const a=document.querySelector(`#reps-${id} .rep-btn.rep-active`);
-  return a?parseInt(a.textContent):null;
+  const inp=document.getElementById('r-'+id);
+  if(!inp)return null;
+  const v=parseInt(inp.value,10);
+  return isNaN(v)?null:v;
 }
 
 async function logSet(id,rMin,rMax){
   const w=parseFloat(document.getElementById('w-'+id).value);
   const r=getRep(id);
   if(!w||w<=0){alert('Enter a weight first.');return;}
-  if(!r){alert('Select reps completed.');return;}
+  if(!r||r<1||r>50){alert('Enter a whole number of reps between 1 and 50.');return;}
   const week=getProgramWeek();const isDeload=week===7;
   const overloaded=!isDeload&&r>=rMax;
   const today=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short'});
@@ -717,17 +733,23 @@ async function logSet(id,rMin,rMax){
   save('hist_'+id,hist);
   const day=getExerciseDay(id);if(day)completeDay(day);
 
-  const noteEl = document.getElementById('noteinput-' + id);
-  syncToSheets(entry, id, noteEl ? noteEl.value : '');
+  const noteEl=document.getElementById('noteinput-'+id);
+  syncToSheets(entry,id,noteEl?noteEl.value:'');
 
   const card=document.getElementById('card-'+id);
   if(card)card.classList.toggle('overload-ready',overloaded);
   buildLogger(id);
-  if(overloaded){
+  if(isDeload){
+    showBanner(id,`Deload logged: ${w}kg &times; ${r} reps.`,false);
+  } else if(r<rMin){
+    showBanner(id,`Below target range — keep weight the same next session and aim for ${rMin}+ reps`,false);
+  } else if(r>=rMax+2){
+    const bigJump=+(getIncrement()*2).toFixed(2);
+    const next=+(w+bigJump).toFixed(2);
+    showBanner(id,`&#128293; Well above range — consider adding ${bigJump}kg next session &#8594; <strong>${next}kg</strong>`,true);
+  } else if(r>=rMax){
     const next=+(w+getIncrement()).toFixed(2);
     showBanner(id,`&#128293; Top of range hit! Add ${getIncrement()}kg next session &#8594; <strong>${next}kg</strong>`,true);
-  } else if(isDeload){
-    showBanner(id,`Deload logged: ${w}kg &times; ${r} reps.`,false);
   } else {
     showBanner(id,`Logged: ${w}kg &times; ${r} reps. Keep pushing.`,false);
   }
