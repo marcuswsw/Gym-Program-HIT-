@@ -230,6 +230,14 @@ nav::-webkit-scrollbar{display:none;}
 .prog-manual-day-btn{padding:5px 11px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s;}
 .prog-manual-day-btn.active{background:var(--teal-bg);border-color:var(--teal-tx);color:var(--teal-tx);}
 .prog-manual-note{font-size:10.5px;color:var(--faint);margin-top:10px;line-height:1.4;}
+.ls-e1rm{font-size:11px;color:var(--teal-tx);margin-top:3px;font-weight:600;}
+.e1rm-graph-wrap{margin-top:12px;}
+.e1rm-graph-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:4px;}
+.e1rm-graph{width:100%;height:60px;display:block;}
+.pr-e1rm{font-size:10.5px;color:var(--teal-tx);margin-top:2px;font-weight:600;}
+.rv-prog-e1rm{font-size:11px;color:var(--muted);margin-top:4px;padding-top:4px;border-top:1px solid var(--border);}
+.rv-prog-e1rm .pos{color:var(--teal-tx);font-weight:700;}
+.rv-prog-e1rm .neg{color:var(--coral-tx);font-weight:700;}
 </style>
 </head>
 <body>
@@ -774,6 +782,35 @@ function checkProgramStall(){
   return LOGGERS.filter(id=>checkStall(id)).length;
 }
 
+function estimate1RM(weight,reps){
+  if(reps===1)return +weight.toFixed(1);
+  return +(weight*(1+reps/30)).toFixed(1);
+}
+
+function isAddedLoadExercise(id){return id==='pullups';}
+function e1rmLabel(id){return isAddedLoadExercise(id)?'Added load e1RM':'Est. 1RM';}
+
+function buildE1RMSparkline(history){
+  const byDate={};const order=[];
+  history.forEach(e=>{
+    const v=estimate1RM(e.weight,e.reps);
+    if(!(e.date in byDate)){order.push(e.date);byDate[e.date]=v;}
+    else if(v>byDate[e.date])byDate[e.date]=v;
+  });
+  const points=order.map(d=>byDate[d]);
+  if(points.length<2)return '';
+  const w=300,h=60,pad=4;
+  const min=Math.min(...points),max=Math.max(...points);
+  const range=max-min||1;
+  const stepX=points.length>1?(w-pad*2)/(points.length-1):0;
+  const coords=points.map((v,i)=>{
+    const x=pad+i*stepX;
+    const y=h-pad-((v-min)/range)*(h-pad*2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<div class="e1rm-graph-wrap"><div class="e1rm-graph-label">Est. 1RM trend</div><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" class="e1rm-graph"><polyline points="${coords}" style="fill:none;stroke:var(--teal-tx);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></div>`;
+}
+
 function buildLogger(id){
   const el=document.getElementById('logger-'+id);
   if(!el)return;
@@ -794,7 +831,8 @@ function buildSingleSetLogger(id,rMin,rMax,el){
   if(last){
     const pr=last.overloaded?'<span class="history-badge">PR</span>':'';
     const noteStr=last.note&&last.note.trim()?`<div class="ls-note">${last.note.trim()}</div>`:'';
-    lastHTML=`<div class="last-session"><div class="ls-label">Last session</div><div class="ls-main">${last.weight} kg &times; ${last.reps} reps &middot; ${last.date}${pr}</div>${noteStr}</div>`;
+    const e1rmStr=`<div class="ls-e1rm">${e1rmLabel(id)}: ${estimate1RM(last.weight,last.reps)} kg</div>`;
+    lastHTML=`<div class="last-session"><div class="ls-label">Last session</div><div class="ls-main">${last.weight} kg &times; ${last.reps} reps &middot; ${last.date}${pr}</div>${e1rmStr}${noteStr}</div>`;
   }else{
     lastHTML=`<div class="last-session ls-empty">First time logging this exercise</div>`;
   }
@@ -810,6 +848,7 @@ function buildSingleSetLogger(id,rMin,rMax,el){
     });
     histHTML+='</div>';
   }
+  histHTML+=buildE1RMSparkline(history);
 
   el.innerHTML=`${lastHTML}${stallHTML}<div class="logger-row"><span class="logger-label">Weight</span><input class="log-input" type="number" id="w-${id}" value="${sugW||''}" placeholder="kg" step="0.5" min="0"><span class="unit-label">kg</span></div><div class="logger-row"><span class="logger-label">Reps</span><input class="log-input" type="number" id="r-${id}" placeholder="reps" min="1" max="50" step="1"><span class="unit-label" style="font-size:11px;color:var(--faint)">target: ${rMin}–${rMax}</span></div><div class="logger-row" style="margin-top:-2px"><span class="logger-label"></span><div class="rep-btns" id="reps-${id}">${quickBtns}</div></div><div class="logger-actions"><button class="log-btn btn-save" onclick="logSet('${id}',${rMin},${rMax})">Save set</button><button class="log-btn btn-clear" onclick="clearHist('${id}')">Clear history</button></div><div id="banner-${id}"></div>${histHTML}`;
 
@@ -830,7 +869,8 @@ function buildTwoSetLogger(id,rMin,rMax,el){
     let lastHTML='';
     if(last){
       const pr=last.overloaded?'<span class="history-badge">PR</span>':'';
-      lastHTML=`<div class="last-session"><div class="ls-label">Last session</div><div class="ls-main">${last.weight} kg &times; ${last.reps} reps &middot; ${last.date}${pr}</div></div>`;
+      const e1rmStr=`<div class="ls-e1rm">${e1rmLabel(id)}: ${estimate1RM(last.weight,last.reps)} kg</div>`;
+      lastHTML=`<div class="last-session"><div class="ls-label">Last session</div><div class="ls-main">${last.weight} kg &times; ${last.reps} reps &middot; ${last.date}${pr}</div>${e1rmStr}</div>`;
     }else{
       lastHTML=`<div class="last-session ls-empty">First time logging this set</div>`;
     }
@@ -855,6 +895,7 @@ function buildTwoSetLogger(id,rMin,rMax,el){
     });
     histHTML+='</div>';
   }
+  histHTML+=buildE1RMSparkline(fullHistory);
 
   el.innerHTML=`${set1.html}${set2.html}<div class="logger-actions" style="margin-top:12px"><button class="log-btn btn-clear" onclick="clearHist('${id}')">Clear history</button></div>${histHTML}`;
 
@@ -886,6 +927,12 @@ async function logSet(id,rMin,rMax,setNum){
   const week=getProgramWeek();const isDeload=week===7;
   const overloaded=!isDeload&&r>=rMax;
   const today=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+
+  const prevSetHist=load('hist_'+id,[]).filter(e=>(e.set||1)===set);
+  const prevBestE1RM=prevSetHist.length?Math.max(...prevSetHist.map(e=>estimate1RM(e.weight,e.reps))):0;
+  const e1rm=estimate1RM(w,r);
+  const isNewE1RMPR=e1rm>prevBestE1RM;
+
   const entry={date:today,weight:w,reps:r,overloaded,week,set};
   const hist=load('hist_'+id,[]);
   hist.push(entry);
@@ -900,20 +947,25 @@ async function logSet(id,rMin,rMax,setNum){
   buildLogger(id);
   const bannerKey=id+suffix;
   const setLabel=setNum?`Set ${set}: `:'';
+  const e1rmStr=`${e1rmLabel(id)} ${e1rm}kg`;
+  const prSuffix=isNewE1RMPR?' &#127881; New estimated 1RM PR!':'';
+  const highlight=overloaded||isNewE1RMPR;
+  let msg;
   if(isDeload){
-    showBanner(bannerKey,`${setLabel}Deload logged: ${w}kg &times; ${r} reps.`,false);
+    msg=`${setLabel}Deload logged: ${w}kg &times; ${r} reps · ${e1rmStr}${prSuffix}`;
   } else if(r<rMin){
-    showBanner(bannerKey,`${setLabel}Below target range — keep weight the same next session and aim for ${rMin}+ reps`,false);
+    msg=`${setLabel}Below target range — keep weight the same next session and aim for ${rMin}+ reps · ${e1rmStr}${prSuffix}`;
   } else if(r>=rMax+2){
     const bigJump=+(getIncrement()*2).toFixed(2);
     const next=+(w+bigJump).toFixed(2);
-    showBanner(bannerKey,`&#128293; ${setLabel}Well above range — consider adding ${bigJump}kg next session &#8594; <strong>${next}kg</strong>`,true);
+    msg=`&#128293; ${setLabel}Well above range — consider adding ${bigJump}kg next session &#8594; <strong>${next}kg</strong> · ${e1rmStr}${prSuffix}`;
   } else if(r>=rMax){
     const next=+(w+getIncrement()).toFixed(2);
-    showBanner(bannerKey,`&#128293; ${setLabel}Top of range hit! Add ${getIncrement()}kg next session &#8594; <strong>${next}kg</strong>`,true);
+    msg=`&#128293; ${setLabel}Top of range hit! Add ${getIncrement()}kg next session &#8594; <strong>${next}kg</strong> · ${e1rmStr}${prSuffix}`;
   } else {
-    showBanner(bannerKey,`${setLabel}Logged: ${w}kg &times; ${r} reps. Keep pushing.`,false);
+    msg=`${setLabel}Logged: ${w}kg &times; ${r} reps · ${e1rmStr}${prSuffix}`;
   }
+  showBanner(bannerKey,msg,highlight);
 }
 
 function showBanner(id,msg,isOverload){
@@ -960,7 +1012,10 @@ function buildPRBoard(){
         const best=hist.reduce((a,b)=>b.weight>a.weight||(b.weight===a.weight&&b.reps>a.reps)?b:a);
         const isToday=best.date===today;
         const wkStr=best.week?` · Wk ${best.week}`:'';
-        html+=`<div class="pr-row${isToday?' pr-today':''}"><span class="pr-name">${name}</span><div class="pr-info"><div class="pr-weight">${best.weight} kg × ${best.reps}</div><div class="pr-meta">${best.date}${wkStr}${isToday?' · today':''}</div></div></div>`;
+        const bestE1=hist.reduce((a,b)=>{const v=estimate1RM(b.weight,b.reps);return(!a||v>a.value)?{value:v,date:b.date}:a;},null);
+        const e1Lbl=isAddedLoadExercise(id)?'Best added load e1RM':'Best e1RM';
+        const e1HTML=bestE1?`<div class="pr-e1rm">${e1Lbl}: ${bestE1.value} kg &middot; ${bestE1.date}</div>`:'';
+        html+=`<div class="pr-row${isToday?' pr-today':''}"><span class="pr-name">${name}</span><div class="pr-info"><div class="pr-weight">${best.weight} kg × ${best.reps}</div><div class="pr-meta">${best.date}${wkStr}${isToday?' · today':''}</div>${e1HTML}</div></div>`;
       }
     });
     html+=`</div></div>`;
@@ -1135,9 +1190,9 @@ function buildReview(){
     bodyHTML+=`</div>`;
     html+=bodyHTML;
   }
-  const prog=LOGGERS.map(id=>{const h=load('hist_'+id,[]).filter(e=>(e.set||1)===1);if(!h.length)return null;const first=h[0];const best=h.reduce((a,b)=>b.weight>a.weight?b:a);const added=+(best.weight-first.weight).toFixed(2);const pct=first.weight>0?+((added/first.weight)*100).toFixed(1):0;return{id,name:getExName(id),first,best,added,pct};}).filter(Boolean).sort((a,b)=>b.pct-a.pct);
+  const prog=LOGGERS.map(id=>{const h=load('hist_'+id,[]).filter(e=>(e.set||1)===1);if(!h.length)return null;const first=h[0];const best=h.reduce((a,b)=>b.weight>a.weight?b:a);const added=+(best.weight-first.weight).toFixed(2);const pct=first.weight>0?+((added/first.weight)*100).toFixed(1):0;const firstE1=estimate1RM(first.weight,first.reps);const bestE1=Math.max(...h.map(e=>estimate1RM(e.weight,e.reps)));const e1Added=+(bestE1-firstE1).toFixed(1);const e1Pct=firstE1>0?+((e1Added/firstE1)*100).toFixed(1):0;return{id,name:getExName(id),first,best,added,pct,firstE1,bestE1,e1Added,e1Pct};}).filter(Boolean).sort((a,b)=>b.pct-a.pct);
   html+=`<div class="rv-section"><div class="rv-section-title">Strength Progression</div><div class="rv-prog-list">`;
-  prog.forEach(d=>{const cls=d.added>0?'improved':d.added<0?'declined':'';html+=`<div class="rv-prog-row ${cls}"><div class="rv-prog-name">${d.name}</div><div class="rv-prog-data"><span>${d.first.weight}kg</span><span class="rv-prog-arrow">→</span><span class="rv-prog-to">${d.best.weight}kg</span><span class="rv-prog-delta${d.added>0?' pos':d.added<0?' neg':''}">${d.added>0?'+':''}${d.added}kg${d.pct!==0?` (${d.pct}%)`:''}${d.best.week?` Wk${d.best.week}`:''}</span></div></div>`;});
+  prog.forEach(d=>{const cls=d.added>0?'improved':d.added<0?'declined':'';html+=`<div class="rv-prog-row ${cls}"><div class="rv-prog-name">${d.name}</div><div class="rv-prog-data"><span>${d.first.weight}kg</span><span class="rv-prog-arrow">→</span><span class="rv-prog-to">${d.best.weight}kg</span><span class="rv-prog-delta${d.added>0?' pos':d.added<0?' neg':''}">${d.added>0?'+':''}${d.added}kg${d.pct!==0?` (${d.pct}%)`:''}${d.best.week?` Wk${d.best.week}`:''}</span></div><div class="rv-prog-e1rm">${e1rmLabel(d.id)}: ${d.firstE1}kg → ${d.bestE1}kg <span class="${d.e1Added>0?'pos':d.e1Added<0?'neg':''}">(${d.e1Added>=0?'+':''}${d.e1Added}kg${d.e1Pct!==0?`, ${d.e1Pct}%`:''})</span></div></div>`;});
   html+=`</div></div>`;
   const NOTE_GROUPS=[{label:'Back',ids:['pullover','yatesrow','cablerow','pullups','backext']},{label:'Deltoids + Triceps',ids:['dbpress','lateralraise','reardelt','pushdown','ohext']},{label:'Legs + Calves',ids:['legext','legpress','hacksquat','legcurl','sldl','calfraise']},{label:'Pectorals + Biceps',ids:['inclinepress','machinepress','crossover','barcurl','inclinecurl']}];
   let notesHTML='';NOTE_GROUPS.forEach(g=>{const rows=g.ids.map(id=>({name:getExName(id),note:load('notes_'+id,'')})).filter(x=>x.note.trim());if(!rows.length)return;notesHTML+=`<div class="rv-notes-group"><div class="rv-notes-day">${g.label}</div>`;rows.forEach(x=>{notesHTML+=`<div class="rv-note-item"><div class="rv-note-name">${x.name}</div><div class="rv-note-text">${x.note.trim()}</div></div>`;});notesHTML+=`</div>`;});
