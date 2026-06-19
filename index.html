@@ -217,6 +217,19 @@ nav::-webkit-scrollbar{display:none;}
 .set-block{border-top:1px solid var(--border);padding-top:12px;margin-top:12px;}
 .set-block:first-child{border-top:none;padding-top:0;margin-top:0;}
 .set-block-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-tx);margin-bottom:8px;}
+.prog-manual-wrap{margin-top:10px;}
+.prog-manual-toggle{background:transparent;border:none;color:var(--muted);font-size:11px;font-weight:600;text-decoration:underline;cursor:pointer;font-family:inherit;padding:2px 0;}
+.prog-manual-toggle:hover{color:var(--text);}
+.prog-manual-panel{margin-top:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+.prog-manual-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.prog-manual-row:last-of-type{margin-bottom:0;}
+.prog-manual-label{font-size:11px;color:var(--muted);font-weight:600;min-width:62px;}
+.prog-manual-step{width:26px;height:26px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1;}
+.prog-manual-step:hover{background:var(--border2);}
+.prog-manual-days{display:flex;gap:6px;flex-wrap:wrap;}
+.prog-manual-day-btn{padding:5px 11px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s;}
+.prog-manual-day-btn.active{background:var(--teal-bg);border-color:var(--teal-tx);color:var(--teal-tx);}
+.prog-manual-note{font-size:10.5px;color:var(--faint);margin-top:10px;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -588,7 +601,64 @@ function renderProgramBanner(){
   const dots=Object.keys(DAY_EXERCISES).map(d=>`<div class="prog-day-dot-wrap"><div class="prog-day-dot${completed.includes(`${d}_w${w}`)?' done':''}"></div><div class="prog-day-label">${dayLabels[d]}</div></div>`).join('');
   const stalledCount=checkProgramStall();
   const progStallBanner=stalledCount>=3?`<div class="prog-stall-banner">Multiple lifts stalling — your body may need a full deload week. Consider switching to Week 7 deload protocol.</div>`:'';
-  el.innerHTML=`<div class="prog-banner"><div class="prog-banner-info"><div class="prog-banner-sub">Program progress</div><div class="prog-banner-week">Week ${w} of ${w===7?'7 — Deload':'6'}</div><div class="prog-banner-label">${WEEK_LABELS[w-1]}</div></div><div class="prog-day-dots">${dots}</div></div>${progStallBanner}`;
+  const manualHTML=buildManualPanelHTML(w,completed);
+  el.innerHTML=`<div class="prog-banner"><div class="prog-banner-info"><div class="prog-banner-sub">Program progress</div><div class="prog-banner-week">Week ${w} of ${w===7?'7 — Deload':'6'}</div><div class="prog-banner-label">${WEEK_LABELS[w-1]}</div></div><div class="prog-day-dots">${dots}</div></div>${progStallBanner}${manualHTML}`;
+}
+
+function buildManualPanelHTML(w,completed){
+  const dayLabels={mon:'Mon',tue:'Tue',thu:'Thu',fri:'Fri'};
+  const dayBtns=TRAINING_DAYS.map(d=>`<button class="prog-manual-day-btn${completed.includes(`${d}_w${w}`)?' active':''}" data-day="${d}" onclick="toggleManualDay(this)">${dayLabels[d]}</button>`).join('');
+  return `<div class="prog-manual-wrap">
+    <button class="prog-manual-toggle" onclick="toggleManualPanel()">Adjust</button>
+    <div class="prog-manual-panel" id="prog-manual-panel" style="display:none">
+      <div class="prog-manual-row">
+        <span class="prog-manual-label">Week</span>
+        <button class="prog-manual-step" onclick="stepManualWeek(-1)">−</button>
+        <input class="log-input" type="number" id="manual-week-input" value="${w}" min="1" max="7" style="width:50px">
+        <button class="prog-manual-step" onclick="stepManualWeek(1)">+</button>
+      </div>
+      <div class="prog-manual-row">
+        <span class="prog-manual-label">Days done</span>
+        <div class="prog-manual-days">${dayBtns}</div>
+      </div>
+      <button class="log-btn btn-save" style="width:100%;margin-top:8px" onclick="saveManualAdjustment()">Save manual adjustment</button>
+      <div class="prog-manual-note">Use this to correct your position if the automatic tracker is off.</div>
+    </div>
+  </div>`;
+}
+
+function toggleManualPanel(){
+  const panel=document.getElementById('prog-manual-panel');
+  if(!panel)return;
+  panel.style.display=panel.style.display==='none'?'block':'none';
+}
+
+function stepManualWeek(delta){
+  const inp=document.getElementById('manual-week-input');
+  if(!inp)return;
+  inp.value=Math.max(1,Math.min(7,(parseInt(inp.value,10)||1)+delta));
+}
+
+function toggleManualDay(btn){
+  btn.classList.toggle('active');
+}
+
+function saveManualAdjustment(){
+  const inp=document.getElementById('manual-week-input');
+  const chosenWeek=Math.max(1,Math.min(7,parseInt(inp.value,10)||1));
+  const activeDays=Array.from(document.querySelectorAll('.prog-manual-day-btn.active')).map(b=>b.dataset.day);
+  const completed=[];
+  for(let pw=1;pw<chosenWeek;pw++){
+    TRAINING_DAYS.forEach(d=>completed.push(`${d}_w${pw}`));
+  }
+  TRAINING_DAYS.forEach(d=>{
+    if(activeDays.includes(d))completed.push(`${d}_w${chosenWeek}`);
+  });
+  saveCompletedDays(completed);
+  recalculateWeek(completed);
+  setProgramWeek(chosenWeek);
+  renderProgramBanner();
+  TRAINING_DAYS.forEach(d=>{if(document.getElementById('page-'+d).classList.contains('active'))renderDayWeek(d);});
 }
 
 function renderDayWeek(id){
